@@ -1,0 +1,8 @@
+{
+  "name": "RST ELECTRONICS",
+  "description": "Rabiul Mobile And Resturent\n",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

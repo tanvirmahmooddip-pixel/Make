@@ -825,6 +825,7 @@ export default function App() {
               companyConfig={appState.companyConfig}
               onOpenBusinessCustomizer={() => setIsBusinessCustomizerOpen(true)}
               onOpenInstallerWizard={() => setIsInstallerWizardOpen(true)}
+              onSelectInvoiceForPrint={setInvoiceForPrint}
             />
           )}
 

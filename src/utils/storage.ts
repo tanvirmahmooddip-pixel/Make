@@ -48,6 +48,31 @@ export type { CompanyConfig } from '../types';
 
 export const BUSINESS_PRESETS: BusinessPreset[] = [
   {
+    id: 'preset-marufedge-promedia',
+    name: 'MarufEdge ProMedia Business Solutions ERP online v.5',
+    industry: 'electronics_cctv',
+    iconName: 'Server',
+    description: 'Flagship enterprise ERP suite: High-speed POS, CCTV security surveillance, IMEI serial tracking, multi-bank treasury, and automated Oman VAT invoices.',
+    config: {
+      companyName: 'MarufEdge ProMedia Business Solutions ERP online v.5',
+      companyNameAr: 'ماروف إيدج برو ميديا لحلول الأعمال والأنظمة الذكية v.5',
+      shortName: 'MEP',
+      industryType: 'electronics_cctv',
+      tagline: 'Business Solutions ERP Online v.5 • Multi-Branch & Real-time Cloud',
+      taglineAr: 'حلول الأعمال السحابية الذكية v.5 • إدارة الفروع والأنظمة',
+      crNumber: 'CR 1394821/2026',
+      vatNumber: 'OM1100239102',
+      taxRatePercent: 5.0,
+      taxLabel: 'Oman VAT (5%)',
+      phone: '+968 2478 9120',
+      email: 'info@marufedge-promedia.com',
+      address: 'Business Solutions Hub, Ruwi Commercial Center, Muscat, Sultanate of Oman',
+      invoiceFooterNote: 'MarufEdge ProMedia Business Solutions ERP online v.5 - Official computerized sales receipt. Goods eligible for exchange within 7 days with original invoice.',
+      invoiceFooterNoteAr: 'ماروف إيدج برو ميديا لحلول الأعمال والأنظمة الذكية v.5 - فاتورة إلكترونية معتمدة.',
+      currency: 'OMR',
+    },
+  },
+  {
     id: 'preset-rabiul-bigbrother',
     name: 'Rabiul & Big Brother - Mobiles & CCTV Solutions',
     industry: 'electronics_cctv',
@@ -316,21 +341,21 @@ export interface AppState {
 const STORAGE_KEY = 'al_rabil_erp_v2_data';
 
 const DEFAULT_COMPANY_CONFIG: CompanyConfig = {
-  companyName: 'Al-Rabiul & Big Brother Mobiles & Smart Security LLC',
-  companyNameAr: 'شركة ربيع والأخ الأكبر للهواتف والأمان الذكي ش.م.م',
-  shortName: 'RB',
+  companyName: 'MarufEdge ProMedia Business Solutions ERP online v.5',
+  companyNameAr: 'ماروف إيدج برو ميديا لحلول الأعمال والأنظمة الذكية v.5',
+  shortName: 'MEP',
   industryType: 'electronics_cctv',
-  tagline: 'Mobiles • CCTV • Smart Security • Oman Bills',
-  taglineAr: 'هواتف • مراقبة • أمان ذكي • سداد فواتير',
-  crNumber: 'CR 1394821',
+  tagline: 'Business Solutions ERP Online v.5 • Multi-Branch & Real-time Cloud',
+  taglineAr: 'حلول الأعمال السحابية الذكية v.5 • إدارة الفروع والأنظمة',
+  crNumber: 'CR 1394821/2026',
   vatNumber: 'OM1100239102',
   taxRatePercent: 5.0,
   taxLabel: 'Oman VAT (5%)',
   phone: '+968 2478 9120',
-  email: 'info@alrabiul-oman.com',
-  address: 'Ruwi Commercial High Street, Ruwi, Sultanate of Oman',
-  invoiceFooterNote: 'Goods once sold can be exchanged within 7 days with original invoice in sellable condition. 12-month manufacturer warranty on official mobile units.',
-  invoiceFooterNoteAr: 'البضاعة المباعة يمكن استبدالها خلال 7 أيام مع الفاتورة الأصلية بحالتها الأصلية. ضمان رسمي لمدة 12 شهر على الهواتف المعتمدة.',
+  email: 'info@marufedge-promedia.com',
+  address: 'Business Solutions Hub, Ruwi Commercial Center, Muscat, Sultanate of Oman',
+  invoiceFooterNote: 'MarufEdge ProMedia Business Solutions ERP online v.5 - Official computerized sales receipt. Goods eligible for exchange within 7 days with original invoice.',
+  invoiceFooterNoteAr: 'ماروف إيدج برو ميديا لحلول الأعمال والأنظمة الذكية v.5 - فاتورة إلكترونية معتمدة.',
   currency: 'OMR',
 };
 
@@ -390,16 +415,36 @@ export function loadAppState(): AppState {
       updatedUsers = [INITIAL_USERS[0], INITIAL_USERS[1], ...nonOwners];
     }
 
+    // Auto-migrate old default name to MarufEdge ProMedia Business Solutions ERP online v.5
+    let currentConfig = parsed.companyConfig || {};
+    if (
+      !currentConfig.companyName ||
+      currentConfig.companyName === 'Al-Rabiul & Big Brother Mobiles & Smart Security LLC' ||
+      currentConfig.companyName.toLowerCase().includes('al-rabiul & big brother')
+    ) {
+      currentConfig = {
+        ...DEFAULT_COMPANY_CONFIG,
+        ...currentConfig,
+        companyName: DEFAULT_COMPANY_CONFIG.companyName,
+        companyNameAr: DEFAULT_COMPANY_CONFIG.companyNameAr,
+        shortName: DEFAULT_COMPANY_CONFIG.shortName,
+        tagline: DEFAULT_COMPANY_CONFIG.tagline,
+        taglineAr: DEFAULT_COMPANY_CONFIG.taglineAr,
+      };
+    } else {
+      currentConfig = {
+        ...DEFAULT_COMPANY_CONFIG,
+        ...currentConfig,
+      };
+    }
+
     const state: AppState = {
       ...getInitialState(),
       ...parsed,
       users: updatedUsers,
       activeUserId: updatedUsers[0].id,
       customers: Array.isArray(parsed.customers) && parsed.customers.length > 0 ? parsed.customers : INITIAL_CUSTOMERS,
-      companyConfig: {
-        ...DEFAULT_COMPANY_CONFIG,
-        ...(parsed.companyConfig || {}),
-      },
+      companyConfig: currentConfig,
     };
 
     saveAppState(state);

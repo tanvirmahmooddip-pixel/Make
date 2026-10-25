@@ -22,6 +22,7 @@ import {
   Shield,
   Layers,
   Store,
+  Server,
 } from 'lucide-react';
 import {
   BankAccount,
@@ -57,6 +58,7 @@ interface LiveDashboardProps {
   onToggleDoorLock: () => void;
   companyConfig?: CompanyConfig;
   onOpenBusinessCustomizer?: () => void;
+  onOpenInstallerWizard?: () => void;
 }
 
 export const LiveDashboard: React.FC<LiveDashboardProps> = ({
@@ -77,6 +79,7 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
   onToggleDoorLock,
   companyConfig,
   onOpenBusinessCustomizer,
+  onOpenInstallerWizard,
 }) => {
   // Calculations
   const totalBankBalance = bankAccounts.reduce((acc, b) => acc + b.currentBalance, 0);
@@ -140,6 +143,19 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          {/* Software Setup Wizard Button */}
+          {onOpenInstallerWizard && (
+            <button
+              onClick={onOpenInstallerWizard}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-bold text-xs transition cursor-pointer shadow-sm"
+              title="Launch Software Setup & Installation Wizard"
+            >
+              <Server className="w-4 h-4 text-blue-400" />
+              <span>Setup Wizard</span>
+              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-blue-500/30 text-blue-200">v2.4</span>
+            </button>
+          )}
+
           {/* Quick Business Profile Customizer Button */}
           {onOpenBusinessCustomizer && (
             <button

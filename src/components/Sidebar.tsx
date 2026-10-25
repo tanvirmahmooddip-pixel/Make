@@ -30,6 +30,7 @@ import {
   Store,
   Layers,
   SlidersHorizontal,
+  Server,
 } from 'lucide-react';
 import { CompanyConfig, LanguageCode, User } from '../types';
 import { TRANSLATIONS } from '../utils/i18n';
@@ -70,6 +71,7 @@ interface SidebarProps {
   onOpenAIModal: () => void;
   companyConfig?: CompanyConfig;
   onOpenBusinessCustomizer?: () => void;
+  onOpenInstallerWizard?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -87,6 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenAIModal,
   companyConfig,
   onOpenBusinessCustomizer,
+  onOpenInstallerWizard,
 }) => {
   const t = TRANSLATIONS[activeLanguage] || TRANSLATIONS.en;
   const [filterQuery, setFilterQuery] = useState('');
@@ -297,6 +300,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           <div className="flex items-center gap-1">
+            {onOpenInstallerWizard && (
+              <button
+                onClick={() => {
+                  onOpenInstallerWizard();
+                  if (window.innerWidth < 1024) onClose();
+                }}
+                title="Launch Software Setup & Installation Wizard"
+                className="p-1.5 rounded-lg text-blue-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                <Server className="w-4 h-4" />
+              </button>
+            )}
+
             {onOpenBusinessCustomizer && (
               <button
                 onClick={() => {
@@ -321,7 +337,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Quick Filter Search inside Sidebar */}
-        <div className="px-3 pt-2.5 pb-1.5">
+        <div className="px-3 pt-2.5 pb-1.5 space-y-2">
           <div className="relative">
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
@@ -340,6 +356,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             )}
           </div>
+
+          {/* Software Setup Wizard Quick Launcher */}
+          {onOpenInstallerWizard && (
+            <button
+              onClick={() => {
+                onOpenInstallerWizard();
+                if (window.innerWidth < 1024) onClose();
+              }}
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-950/80 via-slate-900 to-indigo-950/80 border border-blue-500/40 hover:border-blue-400 text-blue-200 hover:text-white transition group text-left cursor-pointer shadow-sm"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-5 h-5 rounded bg-blue-500/20 border border-blue-400/30 flex items-center justify-center shrink-0">
+                  <Server className="w-3 h-3 text-blue-400 group-hover:scale-110 transition" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[11px] font-bold text-white truncate">Setup Wizard</div>
+                  <div className="text-[9px] text-blue-400/80 truncate">Enterprise Re-Configuration</div>
+                </div>
+              </div>
+              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold border border-blue-400/30">
+                SETUP
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Navigation list */}

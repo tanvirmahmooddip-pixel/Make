@@ -21,6 +21,7 @@ import {
   Moon,
   Store,
   SlidersHorizontal,
+  Server,
 } from 'lucide-react';
 import { CompanyConfig, CurrencyCode, LanguageCode, StoreLocation, User } from '../types';
 import { CURRENCY_RATES, formatMoney } from '../utils/formatters';
@@ -57,6 +58,7 @@ interface NavbarProps {
   onToggleTheme?: () => void;
   companyConfig?: CompanyConfig;
   onOpenBusinessCustomizer?: () => void;
+  onOpenInstallerWizard?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -90,6 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleTheme,
   companyConfig,
   onOpenBusinessCustomizer,
+  onOpenInstallerWizard,
 }) => {
   const t = TRANSLATIONS[activeLanguage] || TRANSLATIONS.en;
   const isRtl = activeLanguage === 'ar' || activeLanguage === 'ur';
@@ -149,10 +152,23 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={onOpenBusinessCustomizer}
               title="Change Company Name & Business Presets"
-              className="hidden lg:flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold transition cursor-pointer shrink-0"
+              className="hidden xl:flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold transition cursor-pointer shrink-0"
             >
               <Store className="w-3 h-3 text-amber-400" />
               <span>Change Business</span>
+            </button>
+          )}
+
+          {/* Software Installation & Customization Wizard Trigger */}
+          {onOpenInstallerWizard && (
+            <button
+              onClick={onOpenInstallerWizard}
+              title="Launch Enterprise Software Setup & Installation Wizard"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-amber-300 font-bold text-[11px] shadow-sm transition cursor-pointer shrink-0 group"
+            >
+              <Server className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">Setup Wizard</span>
+              <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/30 text-amber-200 font-mono">v2.4</span>
             </button>
           )}
         </div>

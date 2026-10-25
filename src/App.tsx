@@ -49,6 +49,7 @@ import { GeminiAIAdvisorModal } from './components/GeminiAIAdvisorModal';
 import { InvoicePrintModal } from './components/InvoicePrintModal';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { BusinessCustomizerModal } from './components/BusinessCustomizerModal';
+import { SoftwareInstallationWizardModal } from './components/SoftwareInstallationWizardModal';
 import { CompanyConfig } from './types';
 import {
   auth,
@@ -80,6 +81,7 @@ export default function App() {
   const [invoiceForPrint, setInvoiceForPrint] = useState<SaleTransaction | null>(null);
   const [isGlobalScannerOpen, setIsGlobalScannerOpen] = useState(false);
   const [isBusinessCustomizerOpen, setIsBusinessCustomizerOpen] = useState(false);
+  const [isInstallerWizardOpen, setIsInstallerWizardOpen] = useState(false);
 
   // Firebase Auth and Cloud Sync state
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
@@ -651,6 +653,52 @@ export default function App() {
     setTimeout(() => setSyncToastMessage(null), 3000);
   };
 
+  // Software Installation & Configuration Wizard Handler
+  const handleCompleteInstallation = (payload: {
+    config: CompanyConfig;
+    currency: CurrencyCode;
+    language: LanguageCode;
+    primaryBranch: Partial<StoreLocation>;
+    ownerUser: { name: string; pin: string };
+    receiptFormat: 'a4' | 'medium' | 'small';
+    deploymentMode: string;
+  }) => {
+    setAppState((prev) => {
+      const updatedBranches = prev.branches.map((b, idx) =>
+        idx === 0
+          ? {
+              ...b,
+              ...payload.primaryBranch,
+            }
+          : b
+      );
+
+      const updatedUsers = prev.users.map((u) =>
+        u.role === 'owner'
+          ? {
+              ...u,
+              name: payload.ownerUser.name,
+              pin: payload.ownerUser.pin,
+            }
+          : u
+      );
+
+      return {
+        ...prev,
+        companyConfig: payload.config,
+        activeCurrency: payload.currency,
+        activeLanguage: payload.language,
+        branches: updatedBranches,
+        users: updatedUsers,
+      };
+    });
+
+    setSyncToastMessage(
+      `Enterprise Software Setup Complete! Deployed: ${payload.config.companyName}`
+    );
+    setTimeout(() => setSyncToastMessage(null), 5000);
+  };
+
   // Summary data prepared for Gemini AI API
   const aiSummaryData = {
     storeName: appState.companyConfig.companyName,
@@ -714,6 +762,7 @@ export default function App() {
         onToggleTheme={toggleTheme}
         companyConfig={appState.companyConfig}
         onOpenBusinessCustomizer={() => setIsBusinessCustomizerOpen(true)}
+        onOpenInstallerWizard={() => setIsInstallerWizardOpen(true)}
       />
 
       {/* Sync Status Toast Banner */}
@@ -751,6 +800,7 @@ export default function App() {
           onOpenAIModal={() => setIsAIModalOpen(true)}
           companyConfig={appState.companyConfig}
           onOpenBusinessCustomizer={() => setIsBusinessCustomizerOpen(true)}
+          onOpenInstallerWizard={() => setIsInstallerWizardOpen(true)}
         />
 
         {/* Main Content Area */}
@@ -774,6 +824,7 @@ export default function App() {
               onToggleDoorLock={handleToggleDoorLock}
               companyConfig={appState.companyConfig}
               onOpenBusinessCustomizer={() => setIsBusinessCustomizerOpen(true)}
+              onOpenInstallerWizard={() => setIsInstallerWizardOpen(true)}
             />
           )}
 
@@ -1097,6 +1148,18 @@ export default function App() {
           setSyncToastMessage(`Branding updated: ${cfg.companyName}`);
           setTimeout(() => setSyncToastMessage(null), 3500);
         }}
+      />
+
+      {/* Enterprise Software Installation & Customization Wizard Modal */}
+      <SoftwareInstallationWizardModal
+        isOpen={isInstallerWizardOpen}
+        onClose={() => setIsInstallerWizardOpen(false)}
+        currentConfig={appState.companyConfig}
+        currentCurrency={appState.activeCurrency}
+        currentLanguage={appState.activeLanguage}
+        branches={appState.branches}
+        currentUser={activeUser}
+        onCompleteInstallation={handleCompleteInstallation}
       />
 
       {/* Mobile Bottom Quick Action Bar for Touchscreens & Phones */}

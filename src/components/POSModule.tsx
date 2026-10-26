@@ -18,6 +18,15 @@ import {
   Camera,
   Wifi,
   Sparkles,
+  Maximize2,
+  Minimize2,
+  ChevronDown,
+  ChevronUp,
+  Layers,
+  Cpu,
+  Scan,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import {
   CartItem,
@@ -31,6 +40,7 @@ import {
 } from '../types';
 import { formatMoney } from '../utils/formatters';
 import { UniversalCameraBarcodeScanner } from './UniversalCameraBarcodeScanner';
+import { soundEffects } from '../utils/soundEffects';
 
 interface POSModuleProps {
   products: Product[];
@@ -57,6 +67,10 @@ export const POSModule: React.FC<POSModuleProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
+  const [isExpandedMode, setIsExpandedMode] = useState<boolean>(false);
+  const [isStockAllExpanded, setIsStockAllExpanded] = useState<boolean>(false);
+  const [manualCodeInput, setManualCodeInput] = useState<string>('');
+  const [soundMuted, setSoundMuted] = useState<boolean>(!companyConfig?.soundEnabled);
 
   // Customer info
   const [customerName, setCustomerName] = useState('Cash Walk-in');
@@ -72,15 +86,22 @@ export const POSModule: React.FC<POSModuleProps> = ({
   const [isCameraScannerOpen, setIsCameraScannerOpen] = useState(false);
   const [scanFeedback, setScanFeedback] = useState<string | null>(null);
 
+  const toggleSound = () => {
+    const next = !soundMuted;
+    setSoundMuted(next);
+    soundEffects.setMuted(next);
+    if (!next) soundEffects.playClick();
+  };
+
   const handleCameraScanResult = (code: string, matched?: Product) => {
+    soundEffects.playBarcodeBeep();
     if (imeiModalItem !== null) {
-      // Assign scanned barcode/IMEI to the modal item
       setCart((prev) =>
         prev.map((c, idx) =>
           idx === imeiModalItem.index ? { ...c, imeiNumbers: [code] } : c
         )
       );
-      setScanFeedback(`Assigned IMEI ${code} to cart item`);
+      setScanFeedback(`Assigned IMEI ${code} to item`);
       setImeiModalItem(null);
       setIsCameraScannerOpen(false);
       return;
@@ -99,7 +120,7 @@ export const POSModule: React.FC<POSModuleProps> = ({
         addToCart(found);
         setScanFeedback(`Scanned & added: ${found.name}`);
       } else {
-        setScanFeedback(`Scanned code: ${code} (Not in catalog, search applied)`);
+        setScanFeedback(`Scanned code: ${code} (Applied to search)`);
         setSearchQuery(code);
       }
     }
@@ -107,6 +128,29 @@ export const POSModule: React.FC<POSModuleProps> = ({
     setTimeout(() => {
       setScanFeedback(null);
     }, 4000);
+  };
+
+  const handleManualCodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualCodeInput.trim()) return;
+    const code = manualCodeInput.trim();
+    const found = products.find(
+      (p) =>
+        p.barcode.toLowerCase() === code.toLowerCase() ||
+        p.sku.toLowerCase() === code.toLowerCase() ||
+        p.id.toLowerCase() === code.toLowerCase()
+    );
+    if (found) {
+      soundEffects.playBarcodeBeep();
+      addToCart(found);
+      setScanFeedback(`Matched code: ${found.name}`);
+      setManualCodeInput('');
+    } else {
+      soundEffects.playAlertBuzzer();
+      setScanFeedback(`Code "${code}" not found, searching catalog.`);
+      setSearchQuery(code);
+    }
+    setTimeout(() => setScanFeedback(null), 3500);
   };
 
   // Filter products
@@ -121,11 +165,18 @@ export const POSModule: React.FC<POSModuleProps> = ({
   });
 
   const addToCart = (product: Product) => {
-    if (product.stock <= 0) return;
+    if (product.stock <= 0) {
+      soundEffects.playAlertBuzzer();
+      return;
+    }
+    soundEffects.playBarcodeBeep();
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
-        if (existing.quantity >= product.stock) return prev;
+        if (existing.quantity >= product.stock) {
+          soundEffects.playAlertBuzzer();
+          return prev;
+        }
         return prev.map((item) =>
           item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
@@ -135,13 +186,17 @@ export const POSModule: React.FC<POSModuleProps> = ({
   };
 
   const updateQuantity = (productId: string, delta: number) => {
+    soundEffects.playClick();
     setCart((prev) =>
       prev
         .map((item) => {
           if (item.product.id === productId) {
             const newQty = item.quantity + delta;
             if (newQty <= 0) return null;
-            if (newQty > item.product.stock) return item;
+            if (newQty > item.product.stock) {
+              soundEffects.playAlertBuzzer();
+              return item;
+            }
             return { ...item, quantity: newQty };
           }
           return item;
@@ -151,6 +206,7 @@ export const POSModule: React.FC<POSModuleProps> = ({
   };
 
   const removeFromCart = (productId: string) => {
+    soundEffects.playClick();
     setCart((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
@@ -166,6 +222,8 @@ export const POSModule: React.FC<POSModuleProps> = ({
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
+
+    soundEffects.playCashChime();
 
     const saleItems = cart.map((c) => ({
       productId: c.product.id,
@@ -212,158 +270,321 @@ export const POSModule: React.FC<POSModuleProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[calc(100vh-80px)]">
-      {/* Left 7 cols: Products Catalog */}
-      <div className="lg:col-span-7 flex flex-col h-full bg-slate-900 border border-slate-800 rounded-2xl p-4 overflow-hidden">
-        {/* Top Controls: Search & Category tabs */}
-        <div className="space-y-3 mb-4">
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search phone, accessory, barcode, SKU or brand..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
-              />
-            </div>
-            <button
-              onClick={() => setIsCameraScannerOpen(true)}
-              title="Open Device Camera Barcode & IMEI Scanner (Android, Apple, Windows, Linux)"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-bold text-amber-300 transition cursor-pointer shrink-0"
-            >
-              <Camera className="w-4 h-4 text-amber-400 animate-pulse" />
-              <span className="hidden sm:inline">Camera Scan</span>
-            </button>
-            <button
-              onClick={() => {
-                const rand = products[Math.floor(Math.random() * products.length)];
-                if (rand) handleCameraScanResult(rand.barcode, rand);
-              }}
-              title="Quick Sample Scan"
-              className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-300 transition cursor-pointer"
-            >
-              <Barcode className="w-4 h-4 text-amber-400" />
-              <span className="hidden sm:inline">Demo</span>
-            </button>
+    <div className={`flex flex-col gap-3 ${isExpandedMode ? 'fixed inset-2 z-50 bg-slate-950 p-3 rounded-2xl border border-amber-500/40 shadow-2xl overflow-y-auto' : 'h-[calc(100vh-80px)]'}`}>
+      {/* Top Technical Control Header */}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl shadow-sm">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-slate-950 font-black text-xs shadow-md shadow-amber-500/20">
+            {companyConfig?.shortName || 'FAP'}
           </div>
-
-          {/* Scan Feedback Banner */}
-          {scanFeedback && (
-            <div className="flex items-center justify-between px-3 py-2 bg-emerald-950/80 border border-emerald-700/60 rounded-xl text-xs text-emerald-300 animate-in fade-in duration-100">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>{scanFeedback}</span>
-              </div>
-              <button
-                onClick={() => setScanFeedback(null)}
-                className="text-emerald-400 hover:text-white text-xs font-bold"
-              >
-                ✕
-              </button>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-white tracking-wide">
+                {companyConfig?.companyName || 'FAKAR AL AYAM PROJECTS LLC'}
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-semibold border border-emerald-500/30">
+                POS LIVE
+              </span>
             </div>
-          )}
-
-          {/* Categories Horizontal Scroll */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-            <button
-              onClick={() => setSelectedCategoryId('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
-                selectedCategoryId === 'all'
-                  ? 'bg-amber-500 text-slate-950 font-bold'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              All Items ({products.length})
-            </button>
-            {categories.map((c) => {
-              const count = products.filter((p) => p.categoryId === c.id).length;
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => setSelectedCategoryId(c.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition cursor-pointer ${
-                    selectedCategoryId === c.id
-                      ? 'bg-amber-500 text-slate-950 font-bold'
-                      : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                  }`}
-                >
-                  {c.name.split('&')[0]} ({count})
-                </button>
-              );
-            })}
+            <div className="text-[10px] text-slate-400 font-arabic">
+              {companyConfig?.companyNameAr || 'شركة فكار الأيام للمشاريع ذ.م.م'}
+            </div>
           </div>
         </div>
 
-        {/* Product Grid */}
-        <div className="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-3 pr-1">
-          {filteredProducts.map((p) => {
-            const isOutOfStock = p.stock <= 0;
-            const inCart = cart.find((i) => i.product.id === p.id);
-            const marginPercent = Math.round(((p.sellingPrice - p.costPrice) / p.sellingPrice) * 100);
+        {/* Center: Fast Manual IMEI / Barcode / Serial Scanner Form */}
+        <form onSubmit={handleManualCodeSubmit} className="flex items-center gap-1.5 flex-1 max-w-md min-w-[220px]">
+          <div className="relative flex-1">
+            <Scan className="w-3.5 h-3.5 text-amber-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={manualCodeInput}
+              onChange={(e) => setManualCodeInput(e.target.value)}
+              placeholder="Fast Scan IMEI / Barcode / Serial SL..."
+              className="w-full pl-8 pr-2 py-1.5 text-xs bg-slate-800 border border-slate-700 rounded-lg text-slate-100 placeholder-slate-400 font-mono focus:outline-none focus:border-amber-500"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition cursor-pointer shrink-0"
+          >
+            Scan Code
+          </button>
+        </form>
 
-            return (
-              <div
-                key={p.id}
-                onClick={() => !isOutOfStock && addToCart(p)}
-                className={`relative flex flex-col justify-between p-3 rounded-xl border transition group cursor-pointer ${
-                  isOutOfStock
-                    ? 'opacity-50 bg-slate-900 border-slate-800 cursor-not-allowed'
-                    : inCart
-                    ? 'bg-slate-800/90 border-amber-500/60 shadow-lg shadow-amber-500/10'
-                    : 'bg-slate-800/50 hover:bg-slate-800 border-slate-700/70 hover:border-slate-600'
-                }`}
-              >
-                <div>
-                  <div className="flex items-start justify-between gap-1 mb-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
-                      {p.brand}
-                    </span>
-                    <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                        p.stock <= p.minStockAlert
-                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                          : 'bg-slate-700 text-slate-300'
-                      }`}
-                    >
-                      {p.stock} in stock
-                    </span>
-                  </div>
+        {/* Right: Technical Options: Expand All Stock, Camera Scanner, Fullscreen, Sound */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            onClick={() => {
+              soundEffects.playExpand();
+              setIsStockAllExpanded(!isStockAllExpanded);
+            }}
+            title="Expand All Stock Options (IMEI, specs, margins, barcode & details)"
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer border ${
+              isStockAllExpanded
+                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md shadow-amber-500/20'
+                : 'bg-slate-800 hover:bg-slate-700 text-amber-400 border-amber-500/30'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>{isStockAllExpanded ? 'Collapse Stock' : 'Expand Option All'}</span>
+          </button>
 
-                  <h3 className="text-xs font-semibold text-slate-100 line-clamp-2 leading-tight group-hover:text-amber-300 transition">
-                    {p.name}
-                  </h3>
-                  <div className="text-[10px] text-slate-400 font-mono mt-0.5">SKU: {p.sku}</div>
-                </div>
+          <button
+            onClick={() => setIsCameraScannerOpen(true)}
+            title="Open Device Camera Barcode & IMEI Scanner (Phone, Tablet, Desktop)"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-xs font-bold text-emerald-300 transition cursor-pointer"
+          >
+            <Camera className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+            <span className="hidden sm:inline">Cam Scanner</span>
+          </button>
 
-                <div className="mt-3 pt-2 border-t border-slate-700/60 flex items-center justify-between">
-                  <div>
-                    <div className="text-xs font-bold font-mono text-amber-400">
-                      {formatMoney(p.sellingPrice, activeCurrency)}
-                    </div>
-                    {currentUser.permissions.editProductCosts && (
-                      <div className="text-[9px] text-emerald-400/80 font-mono">
-                        +{marginPercent}% margin
-                      </div>
-                    )}
-                  </div>
+          <button
+            onClick={toggleSound}
+            title={soundMuted ? 'Unmute Audio Feedback' : 'Mute Audio Feedback'}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition cursor-pointer"
+          >
+            {soundMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-amber-400" />}
+          </button>
 
-                  <div
-                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition ${
-                      inCart
-                        ? 'bg-amber-500 text-slate-950 font-bold'
-                        : 'bg-slate-700 group-hover:bg-amber-500/20 text-slate-300 group-hover:text-amber-400'
-                    }`}
-                  >
-                    {inCart ? inCart.quantity : <Plus className="w-3.5 h-3.5" />}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          <button
+            onClick={() => setIsExpandedMode(!isExpandedMode)}
+            title={isExpandedMode ? 'Exit Expanded View' : 'Expand POS Fullscreen'}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition cursor-pointer"
+          >
+            {isExpandedMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+          </button>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 min-h-0 overflow-hidden">
+        {/* Left 7 cols: Products Catalog */}
+        <div className="lg:col-span-7 flex flex-col h-full bg-slate-900 border border-slate-800 rounded-2xl p-4 overflow-hidden">
+          {/* Top Controls: Search & Category tabs */}
+          <div className="space-y-3 mb-3">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search item name, brand, barcode, SKU or IMEI serial..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 text-xs bg-slate-800 border border-slate-700 rounded-xl text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-500"
+                />
+              </div>
+              <button
+                onClick={() => {
+                  const rand = products[Math.floor(Math.random() * products.length)];
+                  if (rand) handleCameraScanResult(rand.barcode, rand);
+                }}
+                title="Simulate Instant Hardware Barcode Scan"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-300 transition cursor-pointer"
+              >
+                <Barcode className="w-4 h-4 text-amber-400" />
+                <span className="hidden sm:inline">Sim Scan</span>
+              </button>
+            </div>
+
+            {/* Scan Feedback Banner */}
+            {scanFeedback && (
+              <div className="flex items-center justify-between px-3 py-2 bg-emerald-950/80 border border-emerald-700/60 rounded-xl text-xs text-emerald-300 animate-in fade-in duration-100">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span>{scanFeedback}</span>
+                </div>
+                <button
+                  onClick={() => setScanFeedback(null)}
+                  className="text-emerald-400 hover:text-white text-xs font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Categories Horizontal Scroll */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+              <button
+                onClick={() => setSelectedCategoryId('all')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition cursor-pointer ${
+                  selectedCategoryId === 'all'
+                    ? 'bg-amber-500 text-slate-950 font-bold'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                All Items ({products.length})
+              </button>
+              {categories.map((c) => {
+                const count = products.filter((p) => p.categoryId === c.id).length;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setSelectedCategoryId(c.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition cursor-pointer ${
+                      selectedCategoryId === c.id
+                        ? 'bg-amber-500 text-slate-950 font-bold'
+                        : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                    }`}
+                  >
+                    {c.name.split('&')[0]} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Product Grid / Expanded View */}
+          <div className="flex-1 overflow-y-auto pr-1">
+            {isStockAllExpanded ? (
+              /* Expanded Detailed Stock Options View */
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between text-[11px] text-amber-300 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20 font-medium">
+                  <span>Showing full technical stock, IMEI serial tracking & cost margin options</span>
+                  <span>{filteredProducts.length} items found</span>
+                </div>
+                {filteredProducts.map((p) => {
+                  const isOutOfStock = p.stock <= 0;
+                  const inCart = cart.find((i) => i.product.id === p.id);
+                  const marginPercent = Math.round(((p.sellingPrice - p.costPrice) / p.sellingPrice) * 100);
+
+                  return (
+                    <div
+                      key={p.id}
+                      className={`p-3 rounded-xl border transition ${
+                        isOutOfStock
+                          ? 'opacity-60 bg-slate-900 border-slate-800'
+                          : inCart
+                          ? 'bg-slate-800 border-amber-500/60 shadow-md shadow-amber-500/10'
+                          : 'bg-slate-800/60 hover:bg-slate-800 border-slate-700/80'
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex-1 min-w-[200px]">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-700 text-slate-200 uppercase">
+                              {p.brand}
+                            </span>
+                            <span className="text-xs font-bold text-white">{p.name}</span>
+                            {p.nameAr && (
+                              <span className="text-[10px] text-slate-400 font-arabic">
+                                ({p.nameAr})
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap items-center gap-3 mt-1 text-[10px] text-slate-400 font-mono">
+                            <span>SKU: {p.sku}</span>
+                            <span>Barcode: {p.barcode}</span>
+                            {p.trackIMEI && (
+                              <span className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30">
+                                IMEI Serial Required
+                              </span>
+                            )}
+                            <span>Warranty: {p.warrantyMonths}m</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <div className="text-sm font-black font-mono text-amber-400">
+                              {formatMoney(p.sellingPrice, activeCurrency)}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-mono">
+                              Stock: <span className={p.stock <= p.minStockAlert ? 'text-rose-400 font-bold' : 'text-emerald-400'}>{p.stock} units</span>
+                            </div>
+                            {currentUser.permissions.editProductCosts && (
+                              <div className="text-[9px] text-emerald-400 font-mono">
+                                Margin: +{marginPercent}%
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              disabled={isOutOfStock}
+                              onClick={() => addToCart(p)}
+                              className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-slate-950 font-bold text-xs flex items-center gap-1 transition cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>{inCart ? `Add (${inCart.quantity})` : 'Add to Cart'}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              /* Grid View */
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {filteredProducts.map((p) => {
+                  const isOutOfStock = p.stock <= 0;
+                  const inCart = cart.find((i) => i.product.id === p.id);
+                  const marginPercent = Math.round(((p.sellingPrice - p.costPrice) / p.sellingPrice) * 100);
+
+                  return (
+                    <div
+                      key={p.id}
+                      onClick={() => !isOutOfStock && addToCart(p)}
+                      className={`relative flex flex-col justify-between p-3 rounded-xl border transition group cursor-pointer ${
+                        isOutOfStock
+                          ? 'opacity-50 bg-slate-900 border-slate-800 cursor-not-allowed'
+                          : inCart
+                          ? 'bg-slate-800/90 border-amber-500/60 shadow-lg shadow-amber-500/10'
+                          : 'bg-slate-800/50 hover:bg-slate-800 border-slate-700/70 hover:border-slate-600'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-start justify-between gap-1 mb-1">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
+                            {p.brand}
+                          </span>
+                          <span
+                            className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                              p.stock <= p.minStockAlert
+                                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                : 'bg-slate-700 text-slate-300'
+                            }`}
+                          >
+                            {p.stock} in stock
+                          </span>
+                        </div>
+
+                        <h3 className="text-xs font-semibold text-slate-100 line-clamp-2 leading-tight group-hover:text-amber-300 transition">
+                          {p.name}
+                        </h3>
+                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">SKU: {p.sku}</div>
+                      </div>
+
+                      <div className="mt-3 pt-2 border-t border-slate-700/60 flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-bold font-mono text-amber-400">
+                            {formatMoney(p.sellingPrice, activeCurrency)}
+                          </div>
+                          {currentUser.permissions.editProductCosts && (
+                            <div className="text-[9px] text-emerald-400/80 font-mono">
+                              +{marginPercent}% margin
+                            </div>
+                          )}
+                        </div>
+
+                        <div
+                          className={`w-6 h-6 rounded-lg flex items-center justify-center transition ${
+                            inCart
+                              ? 'bg-amber-500 text-slate-950 font-bold'
+                              : 'bg-slate-700 group-hover:bg-amber-500/20 text-slate-300 group-hover:text-amber-400'
+                          }`}
+                        >
+                          {inCart ? inCart.quantity : <Plus className="w-3.5 h-3.5" />}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
 
       {/* Right 5 cols: Cart, Customer & Checkout */}
       <div className="lg:col-span-5 flex flex-col h-full bg-slate-900 border border-slate-800 rounded-2xl p-4 overflow-hidden">
@@ -580,6 +801,7 @@ export const POSModule: React.FC<POSModuleProps> = ({
             <span>Complete Sale & Issue Oman VAT Invoice</span>
           </button>
         </div>
+      </div>
       </div>
 
       {/* Optional IMEI Serial Assignment Modal */}

@@ -240,14 +240,28 @@ export const BusinessCustomizerModal: React.FC<BusinessCustomizerModalProps> = (
               {/* Company Name Arabic */}
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">
-                  Company / Store Name (Arabic / Local)
+                  Company / Store Name (Arabic / العربية)
                 </label>
                 <input
                   type="text"
                   dir="rtl"
-                  value={formData.companyNameAr}
+                  value={formData.companyNameAr || ''}
                   onChange={(e) => setFormData({ ...formData, companyNameAr: e.target.value })}
-                  placeholder="مثال: شركة ربيع والأخ الأكبر ش.م.م"
+                  placeholder="مثال: شركة فكار الأيام للمشاريع ذ.م.م"
+                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              {/* Company Name Bangla */}
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">
+                  Company / Store Name (Bangla / বাংলা)
+                </label>
+                <input
+                  type="text"
+                  value={formData.companyNameBn || ''}
+                  onChange={(e) => setFormData({ ...formData, companyNameBn: e.target.value })}
+                  placeholder="যেমন: ফাকার আল আইয়াম প্রজেক্টস এলএলসি"
                   className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
                 />
               </div>
@@ -304,14 +318,28 @@ export const BusinessCustomizerModal: React.FC<BusinessCustomizerModalProps> = (
               {/* Arabic Tagline */}
               <div>
                 <label className="block text-slate-300 font-semibold mb-1">
-                  Business Tagline (Arabic)
+                  Business Tagline (Arabic / العربية)
                 </label>
                 <input
                   type="text"
                   dir="rtl"
-                  value={formData.taglineAr}
+                  value={formData.taglineAr || ''}
                   onChange={(e) => setFormData({ ...formData, taglineAr: e.target.value })}
                   placeholder="هواتف • مراقبة • أمان ذكي"
+                  className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                />
+              </div>
+
+              {/* Bangla Tagline */}
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">
+                  Business Tagline (Bangla / বাংলা)
+                </label>
+                <input
+                  type="text"
+                  value={formData.taglineBn || ''}
+                  onChange={(e) => setFormData({ ...formData, taglineBn: e.target.value })}
+                  placeholder="মোবাইল • সিসিটিভি • স্মার্ট টেক সলিউশনস"
                   className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-500"
                 />
               </div>

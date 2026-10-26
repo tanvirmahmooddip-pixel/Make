@@ -37,13 +37,31 @@ export type BusinessIndustry =
   | 'consulting_services'
   | 'custom';
 
+export interface DashboardWidgetConfig {
+  showDailySalesVolume: boolean;
+  showHighValueTransactions: boolean;
+  showCashDrawer: boolean;
+  showBankAccounts: boolean;
+  showCCTVFeeds: boolean;
+  showSmartDoor: boolean;
+  showRepairsBottlenecks: boolean;
+  showQuickLaunchpad: boolean;
+  showActivityFeed: boolean;
+  showTopProducts: boolean;
+  showCategoryBreakdown: boolean;
+  showLiveOperators: boolean;
+  showAlertBadges: boolean;
+}
+
 export interface CompanyConfig {
   companyName: string;
   companyNameAr: string;
+  companyNameBn?: string;
   shortName: string;
   industryType: BusinessIndustry;
   tagline: string;
   taglineAr: string;
+  taglineBn?: string;
   crNumber: string;
   vatNumber: string;
   taxRatePercent: number;
@@ -51,9 +69,15 @@ export interface CompanyConfig {
   phone: string;
   email: string;
   address: string;
+  addressAr?: string;
+  addressBn?: string;
   invoiceFooterNote: string;
   invoiceFooterNoteAr: string;
   currency: CurrencyCode;
+  logoUrl?: string;
+  soundEnabled?: boolean;
+  colorTheme?: 'emerald_gold' | 'neon_cyan' | 'sapphire_tech' | 'cyber_amber';
+  dashboardWidgets?: DashboardWidgetConfig;
 }
 
 export interface BusinessPreset {

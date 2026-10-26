@@ -149,7 +149,7 @@ Thank you for shopping with ${companyConfig.companyName}! شكراً لتعام�
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <div className="w-8 h-8 rounded-lg bg-amber-600 text-white font-black flex items-center justify-center text-xs">
-                      {companyConfig.shortName || 'RB'}
+                      {companyConfig.shortName || 'FAP'}
                     </div>
                     <span className="text-base font-extrabold text-slate-900 tracking-tight">
                       {companyConfig.companyName}
@@ -158,6 +158,11 @@ Thank you for shopping with ${companyConfig.companyName}! شكراً لتعام�
                   <div className="text-xs font-bold text-slate-700 font-sans" dir="rtl">
                     {companyConfig.companyNameAr}
                   </div>
+                  {companyConfig.companyNameBn && (
+                    <div className="text-[11px] font-semibold text-slate-600 font-sans">
+                      {companyConfig.companyNameBn}
+                    </div>
+                  )}
                   <div className="text-[11px] text-slate-500 mt-1">
                     {companyConfig.address}
                   </div>

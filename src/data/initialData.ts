@@ -20,13 +20,13 @@ import {
 export const INITIAL_BRANCHES: StoreLocation[] = [
   {
     id: 'branch-ruwi',
-    name: 'Al-Rabiul & Big Brother Mobiles & CCTV - Ruwi High Street',
-    nameAr: 'شركة ربيع والأخ الأكبر للهواتف والمراقبة - شارع روي التجاري',
+    name: 'FAKAR AL AYAM PROJECTS LLC - Ruwi Commercial HQ',
+    nameAr: 'شركة فكار الأيام للمشاريع ذ.م.م - المقر الرئيسي روي',
     city: 'Muscat',
-    address: 'Near Ruwi Roundabout, Shop #14, Muscat, Oman',
+    address: 'Commercial Projects Complex, Ruwi High Street, Shop #14, Muscat, Oman',
     phone: '+968 2478 9120',
-    crNumber: 'CR 1394821',
-    vatNumber: 'OM1100239102',
+    crNumber: 'CR 1492083/2026',
+    vatNumber: 'OM1100984512',
     isHeadquarters: true,
   },
   {
@@ -438,7 +438,7 @@ export const INITIAL_BANK_ACCOUNTS: BankAccount[] = [
   {
     id: 'bank-muscat-corp',
     bankName: 'Bank Muscat',
-    accountName: 'Al-Rabil International LLC (Main Corporate)',
+    accountName: 'FAKAR AL AYAM PROJECTS LLC (Main Corporate)',
     accountNumber: '0421-9876-0012-001',
     iban: 'OM54BMUS042198760012001',
     currentBalance: 14250.750,

@@ -130,19 +130,27 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group select-none"
           >
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 text-slate-950 font-black text-xs sm:text-base group-hover:scale-105 transition-transform shrink-0">
-              {companyConfig?.shortName || 'RB'}
+              {companyConfig?.shortName || 'FAP'}
             </div>
-            <div className="max-w-[150px] sm:max-w-[240px] md:max-w-[280px]">
+            <div className="max-w-[150px] sm:max-w-[260px] md:max-w-[320px]">
               <div className="flex items-center gap-1.5 font-bold tracking-tight text-white leading-none">
                 <span className="truncate text-xs sm:text-sm group-hover:text-amber-300 transition">
-                  {companyConfig?.companyName || 'RABIUL & BIG BROTHER'}
+                  {activeLanguage === 'bn' && companyConfig?.companyNameBn
+                    ? companyConfig.companyNameBn
+                    : activeLanguage === 'ar' && companyConfig?.companyNameAr
+                    ? companyConfig.companyNameAr
+                    : companyConfig?.companyName || 'FAKAR AL AYAM PROJECTS LLC'}
                 </span>
                 <span className="hidden sm:inline-block text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-semibold border border-amber-500/30 font-mono shrink-0">
                   {companyConfig?.taxLabel || 'VAT 5%'}
                 </span>
               </div>
               <div className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 font-medium truncate hidden xs:block">
-                {companyConfig?.tagline || 'Business ERP Solutions'}
+                {activeLanguage === 'bn' && companyConfig?.taglineBn
+                  ? companyConfig.taglineBn
+                  : activeLanguage === 'ar' && companyConfig?.companyNameAr
+                  ? companyConfig.companyNameAr
+                  : companyConfig?.companyNameAr || companyConfig?.tagline || 'شركة فكار الأيام للمشاريع ذ.م.م'}
               </div>
             </div>
           </div>

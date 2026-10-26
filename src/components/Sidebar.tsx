@@ -286,11 +286,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="p-3 border-b border-slate-800/80 bg-slate-950/50 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center text-slate-950 font-black text-xs shadow-sm">
-              {companyConfig?.shortName || 'RB'}
+              {companyConfig?.shortName || 'FAP'}
             </div>
             <div className="min-w-0">
               <div className="text-xs font-bold text-white truncate max-w-[140px]">
-                {companyConfig?.companyName || 'Business ERP'}
+                {activeLanguage === 'bn' && companyConfig?.companyNameBn
+                  ? companyConfig.companyNameBn
+                  : activeLanguage === 'ar' && companyConfig?.companyNameAr
+                  ? companyConfig.companyNameAr
+                  : companyConfig?.companyName || 'FAKAR AL AYAM PROJECTS LLC'}
               </div>
               <div className="text-[10px] text-emerald-400 font-mono font-semibold flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />

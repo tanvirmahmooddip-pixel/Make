@@ -31,6 +31,9 @@ import {
   Flame,
   CreditCard,
   Star,
+  Users,
+  Eye,
+  Scan,
 } from 'lucide-react';
 import {
   BankAccount,
@@ -45,6 +48,7 @@ import {
   SmartDoor,
   TelecomBillPayment,
   UtilityBillPayment,
+  DashboardWidgetConfig,
 } from '../types';
 import { formatMoney, formatDateTime } from '../utils/formatters';
 
@@ -167,134 +171,265 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
     (j) => j.status !== 'completed'
   );
 
+  const widgets: DashboardWidgetConfig = companyConfig?.dashboardWidgets || {
+    showDailySalesVolume: true,
+    showHighValueTransactions: true,
+    showCashDrawer: true,
+    showBankAccounts: true,
+    showCCTVFeeds: true,
+    showSmartDoor: true,
+    showRepairsBottlenecks: true,
+    showQuickLaunchpad: true,
+    showActivityFeed: true,
+    showTopProducts: true,
+    showCategoryBreakdown: true,
+    showLiveOperators: true,
+    showAlertBadges: true,
+  };
+
   return (
-    <div className="space-y-6 pb-12">
-      {/* Top Banner: Store Status & Executive Ticker */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping absolute inset-0" />
-            <div className="w-3 h-3 rounded-full bg-emerald-500 relative" />
+    <div className="space-y-5 pb-12">
+      {/* Top Banner: Store Status, Multilingual Brand & Executive Controls */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700/80 shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="relative mt-1">
+              <div className="w-3 h-3 rounded-full bg-emerald-500 animate-ping absolute inset-0" />
+              <div className="w-3 h-3 rounded-full bg-emerald-500 relative" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-base font-extrabold text-white tracking-tight">
+                  {companyConfig?.companyName || 'FAKAR AL AYAM PROJECTS LLC'}
+                </h1>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono border border-emerald-500/30 font-bold">
+                  ERP v5.0 LIVE
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-300 mt-1 font-medium">
+                <span className="font-arabic text-amber-300">
+                  {companyConfig?.companyNameAr || 'شركة فكار الأيام للمشاريع ذ.م.م'}
+                </span>
+                {companyConfig?.companyNameBn && (
+                  <span className="text-cyan-300">
+                    • {companyConfig.companyNameBn}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                {companyConfig?.address || 'Muscat, Oman'} • {companyConfig?.tagline || 'Commercial Projects, Electronics & Smart Systems Solutions'}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-              <span>{companyConfig?.companyName || 'Al-Rabiul & Big Brother'} Executive Terminal</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-mono border border-emerald-500/30">
-                SYSTEM LIVE
-              </span>
-            </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {companyConfig?.address || 'Muscat, Oman'} • {companyConfig?.tagline || 'Real-time sales, multi-bank treasury, CCTV security & VAT automation.'}
-            </p>
-          </div>
-        </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Software Setup Wizard Button */}
-          {onOpenInstallerWizard && (
+          <div className="flex flex-wrap items-center gap-2">
+            {/* 1-Click POS with Expand Option */}
             <button
-              onClick={onOpenInstallerWizard}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-bold text-xs transition cursor-pointer shadow-sm"
-              title="Launch Software Setup & Installation Wizard"
+              onClick={() => onNavigate('pos')}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 transition cursor-pointer"
             >
-              <Server className="w-4 h-4 text-blue-400" />
-              <span>Setup Wizard</span>
-              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-blue-500/30 text-blue-200">v2.4</span>
+              <ShoppingCart className="w-4 h-4" />
+              <span>POS (Expand All)</span>
             </button>
-          )}
 
-          {/* Quick Business Profile Customizer Button */}
-          {onOpenBusinessCustomizer && (
+            {/* 1-Click Inventory with Expand Option */}
             <button
-              onClick={onOpenBusinessCustomizer}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-bold text-xs transition cursor-pointer"
+              onClick={() => onNavigate('inventory')}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-bold transition cursor-pointer"
             >
-              <Store className="w-4 h-4 text-amber-400" />
-              <span>Change Business Profile</span>
+              <Boxes className="w-4 h-4 text-amber-400" />
+              <span>Inventory (Expand)</span>
             </button>
-          )}
 
-          {/* Quick Bank Deposit Button */}
-          <button
-            onClick={onOpenDepositModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer"
-          >
-            <ArrowDownToLine className="w-4 h-4" />
-            <span>Deposit Cash to Bank</span>
-          </button>
-
-          {/* Door Status Toggle */}
-          <button
-            onClick={onToggleDoorLock}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
-              smartDoor.status === 'locked'
-                ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
-                : 'bg-amber-500/20 border-amber-500/50 text-amber-300 hover:bg-amber-500/30'
-            }`}
-          >
-            {smartDoor.status === 'locked' ? (
-              <Lock className="w-4 h-4 text-emerald-400" />
-            ) : (
-              <Unlock className="w-4 h-4 text-amber-400" />
+            {/* Software Setup Wizard Button */}
+            {onOpenInstallerWizard && (
+              <button
+                onClick={onOpenInstallerWizard}
+                className="flex items-center gap-1.5 px-2.5 py-2 rounded-xl bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-bold text-xs transition cursor-pointer"
+                title="Launch Software Setup & Installation Wizard"
+              >
+                <Server className="w-3.5 h-3.5 text-blue-400" />
+                <span>Wizard</span>
+              </button>
             )}
-            <span>Door: {smartDoor.status.toUpperCase()}</span>
-          </button>
 
-          {/* Gemini AI Audit Button */}
-          <button
-            onClick={onOpenAIModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-purple-600/30 transition cursor-pointer"
-          >
-            <Sparkles className="w-4 h-4 text-purple-200" />
-            <span>Gemini AI Audit</span>
-          </button>
+            {/* Quick Bank Deposit Button */}
+            <button
+              onClick={onOpenDepositModal}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition cursor-pointer"
+            >
+              <ArrowDownToLine className="w-4 h-4" />
+              <span>Deposit Cash</span>
+            </button>
+
+            {/* Door Status Toggle */}
+            <button
+              onClick={onToggleDoorLock}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                smartDoor.status === 'locked'
+                  ? 'bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700'
+                  : 'bg-amber-500/20 border-amber-500/50 text-amber-300 hover:bg-amber-500/30'
+              }`}
+            >
+              {smartDoor.status === 'locked' ? (
+                <Lock className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Unlock className="w-3.5 h-3.5 text-amber-400" />
+              )}
+              <span>Door: {smartDoor.status.toUpperCase()}</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* ALL SALES OR USER OPERATOR OPTION & ALERTS TECHNICAL BAR */}
+      {(widgets.showLiveOperators || widgets.showAlertBadges) && (
+        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-md space-y-3">
+          {/* Top Row: Operators Status */}
+          {widgets.showLiveOperators && (
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-slate-800 text-xs">
+              <div className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-cyan-400" />
+                <span className="font-bold text-white uppercase tracking-wider text-[11px]">
+                  Live Store Operators & Terminal Options:
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[11px]">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="font-semibold text-emerald-300">Cashier Terminal #1:</span>
+                  <span className="text-slate-300 font-mono">Walk-in POS Active</span>
+                </div>
+
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-500/10 border border-blue-500/30 text-[11px]">
+                  <span className="w-2 h-2 rounded-full bg-blue-400" />
+                  <span className="font-semibold text-blue-300">Scanner Cam #2:</span>
+                  <span className="text-slate-300 font-mono">IMEI/Barcode Ready</span>
+                </div>
+
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-500/10 border border-purple-500/30 text-[11px]">
+                  <span className="w-2 h-2 rounded-full bg-purple-400" />
+                  <span className="font-semibold text-purple-300">Tech Specialist:</span>
+                  <span className="text-slate-300 font-mono">{activeRepairs.length} Job Cards</span>
+                </div>
+
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-[11px]">
+                  <span className="w-2 h-2 rounded-full bg-amber-400" />
+                  <span className="font-semibold text-amber-300">Owner Console:</span>
+                  <span className="text-slate-300 font-mono">Master Override</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bottom Row: Real-time Operational Alerts */}
+          {widgets.showAlertBadges && (
+            <div className="flex flex-wrap items-center justify-between gap-2.5 text-xs">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400" />
+                <span className="font-bold text-white uppercase tracking-wider text-[11px]">
+                  Live System Alerts:
+                </span>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                {lowStockProducts.length > 0 && (
+                  <button
+                    onClick={() => onNavigate('inventory')}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-300 text-[11px] font-bold transition cursor-pointer"
+                  >
+                    <Boxes className="w-3.5 h-3.5 text-rose-400" />
+                    <span>{lowStockProducts.length} Items Low Stock (Restock Alert)</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => onNavigate('cctvLive')}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-[11px] font-semibold transition cursor-pointer"
+                >
+                  <Shield className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>CCTV Surveillance: 4 Cameras Online</span>
+                </button>
+
+                <button
+                  onClick={onToggleDoorLock}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
+                    smartDoor.status === 'locked'
+                      ? 'bg-slate-800 border-slate-700 text-slate-300'
+                      : 'bg-amber-500/20 border-amber-500/40 text-amber-300 animate-pulse'
+                  }`}
+                >
+                  {smartDoor.status === 'locked' ? (
+                    <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                  ) : (
+                    <Unlock className="w-3.5 h-3.5 text-amber-400" />
+                  )}
+                  <span>Door Lock: {smartDoor.status.toUpperCase()}</span>
+                </button>
+
+                {activeRepairs.length > 0 && (
+                  <button
+                    onClick={() => onNavigate('pendingBottlenecks')}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/15 hover:bg-orange-500/25 border border-orange-500/30 text-orange-300 text-[11px] font-semibold transition cursor-pointer"
+                  >
+                    <Wrench className="w-3.5 h-3.5 text-orange-400" />
+                    <span>{activeRepairs.length} Pending Repairs In Service</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* KPI Cards Grid with Dynamic Auto-Fit */}
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5">
         {/* Card 1: Drawer Cash in Hand */}
-        <div
-          onClick={onOpenDepositModal}
-          className="p-4 rounded-2xl bg-slate-900 border border-emerald-500/30 hover:border-emerald-500/60 transition group cursor-pointer shadow-md"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
-              Drawer Cash (Now)
-            </span>
-            <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition">
-              <Wallet className="w-4 h-4" />
+        {widgets.showCashDrawer && (
+          <div
+            onClick={onOpenDepositModal}
+            className="p-4 rounded-2xl bg-slate-900 border border-emerald-500/30 hover:border-emerald-500/60 transition group cursor-pointer shadow-md"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+                Drawer Cash (Now)
+              </span>
+              <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition">
+                <Wallet className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-lg font-bold font-mono text-emerald-300">
+              {formatMoney(cashInHand, activeCurrency)}
+            </div>
+            <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+              <ArrowDownToLine className="w-3 h-3 text-emerald-400" />
+              <span>Click to deposit to bank</span>
             </div>
           </div>
-          <div className="text-lg font-bold font-mono text-emerald-300">
-            {formatMoney(cashInHand, activeCurrency)}
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-            <ArrowDownToLine className="w-3 h-3 text-emerald-400" />
-            <span>Click to deposit to bank</span>
-          </div>
-        </div>
+        )}
 
         {/* Card 2: Combined Bank Balances */}
-        <div
-          onClick={() => onNavigate('bankLedger')}
-          className="p-4 rounded-2xl bg-slate-900 border border-blue-500/30 hover:border-blue-500/60 transition group cursor-pointer shadow-md"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
-              Company Banks
-            </span>
-            <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition">
-              <Landmark className="w-4 h-4" />
+        {widgets.showBankAccounts && (
+          <div
+            onClick={() => onNavigate('bankLedger')}
+            className="p-4 rounded-2xl bg-slate-900 border border-blue-500/30 hover:border-blue-500/60 transition group cursor-pointer shadow-md"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-blue-400">
+                Company Banks
+              </span>
+              <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 group-hover:scale-110 transition">
+                <Landmark className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-lg font-bold font-mono text-blue-300">
+              {formatMoney(totalBankBalance, activeCurrency)}
+            </div>
+            <div className="text-[10px] text-slate-400 mt-1 truncate">
+              {bankAccounts.length} Accounts (Muscat/Dhofar/NBO)
             </div>
           </div>
-          <div className="text-lg font-bold font-mono text-blue-300">
-            {formatMoney(totalBankBalance, activeCurrency)}
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1 truncate">
-            {bankAccounts.length} Accounts (Muscat/Dhofar/NBO)
-          </div>
-        </div>
+        )}
 
         {/* Card 3: Today Gross Sales */}
         <div
@@ -339,126 +474,134 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
         </div>
 
         {/* Card 5: Low Stock Radar */}
-        <div
-          onClick={() => onNavigate('inventory')}
-          className="p-4 rounded-2xl bg-slate-900 border border-rose-500/30 hover:border-rose-500/60 transition group cursor-pointer shadow-md"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
-              Stock Warnings
-            </span>
-            <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 group-hover:scale-110 transition">
-              <Boxes className="w-4 h-4" />
+        {widgets.showTopProducts && (
+          <div
+            onClick={() => onNavigate('inventory')}
+            className="p-4 rounded-2xl bg-slate-900 border border-rose-500/30 hover:border-rose-500/60 transition group cursor-pointer shadow-md"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
+                Stock Warnings
+              </span>
+              <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 group-hover:scale-110 transition">
+                <Boxes className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-lg font-bold font-mono text-rose-300">
+              {lowStockProducts.length} Items
+            </div>
+            <div className="text-[10px] text-rose-400/80 mt-1 truncate">
+              {lowStockProducts[0]?.name.split(' ')[0] || 'All stocked'}
             </div>
           </div>
-          <div className="text-lg font-bold font-mono text-rose-300">
-            {lowStockProducts.length} Items
-          </div>
-          <div className="text-[10px] text-rose-400/80 mt-1 truncate">
-            {lowStockProducts[0]?.name.split(' ')[0] || 'All stocked'}
-          </div>
-        </div>
+        )}
 
         {/* Card 6: Active Repairs & Field Jobs */}
-        <div
-          onClick={() => onNavigate('repairs')}
-          className="p-4 rounded-2xl bg-slate-900 border border-orange-500/30 hover:border-orange-500/60 transition group cursor-pointer shadow-md"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400">
-              Active Services
-            </span>
-            <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-400 group-hover:scale-110 transition">
-              <Wrench className="w-4 h-4" />
+        {widgets.showRepairsBottlenecks && (
+          <div
+            onClick={() => onNavigate('repairs')}
+            className="p-4 rounded-2xl bg-slate-900 border border-orange-500/30 hover:border-orange-500/60 transition group cursor-pointer shadow-md"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-orange-400">
+                Active Services
+              </span>
+              <div className="p-1.5 rounded-lg bg-orange-500/10 text-orange-400 group-hover:scale-110 transition">
+                <Wrench className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-lg font-bold font-mono text-orange-300">
+              {activeRepairs.length + activeFieldJobs.length} Active
+            </div>
+            <div className="text-[10px] text-slate-400 mt-1">
+              {activeRepairs.length} Repairs • {activeFieldJobs.length} CCTV Jobs
             </div>
           </div>
-          <div className="text-lg font-bold font-mono text-orange-300">
-            {activeRepairs.length + activeFieldJobs.length} Active
-          </div>
-          <div className="text-[10px] text-slate-400 mt-1">
-            {activeRepairs.length} Repairs • {activeFieldJobs.length} CCTV Jobs
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Quick Launchpad Grid */}
-      <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
-        <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
-          <span>Quick Operations Launchpad</span>
-          <span className="text-[11px] text-slate-500">Fast 1-Click Access</span>
+      {widgets.showQuickLaunchpad && (
+        <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center justify-between">
+            <span>Quick Operations Launchpad</span>
+            <span className="text-[11px] text-slate-500">Fast 1-Click Access</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5">
+            <button
+              onClick={() => onNavigate('pos')}
+              className="p-3 rounded-xl bg-slate-800 hover:bg-emerald-950/40 border border-slate-700 hover:border-emerald-500/40 transition flex flex-col items-center text-center group cursor-pointer"
+            >
+              <ShoppingCart className="w-5 h-5 text-emerald-400 mb-1.5 group-hover:scale-110 transition" />
+              <span className="text-xs font-bold text-slate-200">POS Sale</span>
+              <span className="text-[10px] text-slate-400">Expand Terminal</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate('inventory')}
+              className="p-3 rounded-xl bg-slate-800 hover:bg-amber-950/40 border border-slate-700 hover:border-amber-500/40 transition flex flex-col items-center text-center group cursor-pointer"
+            >
+              <Boxes className="w-5 h-5 text-amber-400 mb-1.5 group-hover:scale-110 transition" />
+              <span className="text-xs font-bold text-slate-200">Stock Catalog</span>
+              <span className="text-[10px] text-slate-400">Expand All IMEIs</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate('repairs')}
+              className="p-3 rounded-xl bg-slate-800 hover:bg-orange-950/40 border border-slate-700 hover:border-orange-500/40 transition flex flex-col items-center text-center group cursor-pointer"
+            >
+              <Wrench className="w-5 h-5 text-orange-400 mb-1.5 group-hover:scale-110 transition" />
+              <span className="text-xs font-bold text-slate-200">Job Card</span>
+              <span className="text-[10px] text-slate-400">Device Intake</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate('utilityBills')}
+              className="p-3 rounded-xl bg-slate-800 hover:bg-yellow-950/40 border border-slate-700 hover:border-yellow-500/40 transition flex flex-col items-center text-center group cursor-pointer"
+            >
+              <Zap className="w-5 h-5 text-yellow-400 mb-1.5 group-hover:scale-110 transition" />
+              <span className="text-xs font-bold text-slate-200">Nama Bills</span>
+              <span className="text-[10px] text-slate-400">Power & Water</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate('telecomBills')}
+              className="p-3 rounded-xl bg-slate-800 hover:bg-teal-950/40 border border-slate-700 hover:border-teal-500/40 transition flex flex-col items-center text-center group cursor-pointer"
+            >
+              <PhoneCall className="w-5 h-5 text-teal-400 mb-1.5 group-hover:scale-110 transition" />
+              <span className="text-xs font-bold text-slate-200">Telecom</span>
+              <span className="text-[10px] text-slate-400">Omantel / Ooredoo</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate('cctvLive')}
+              className="p-3 rounded-xl bg-slate-800 hover:bg-cyan-950/40 border border-slate-700 hover:border-cyan-500/40 transition flex flex-col items-center text-center group cursor-pointer"
+            >
+              <Shield className="w-5 h-5 text-cyan-400 mb-1.5 group-hover:scale-110 transition" />
+              <span className="text-xs font-bold text-slate-200">Live CCTV</span>
+              <span className="text-[10px] text-slate-400">Door & Feeds</span>
+            </button>
+
+            <button
+              onClick={onOpenAIModal}
+              className="p-3 rounded-xl bg-gradient-to-b from-purple-900/40 to-indigo-900/40 hover:from-purple-900/60 hover:to-indigo-900/60 border border-purple-500/40 transition flex flex-col items-center text-center group cursor-pointer"
+            >
+              <Sparkles className="w-5 h-5 text-purple-400 mb-1.5 group-hover:scale-110 transition" />
+              <span className="text-xs font-bold text-purple-200">Gemini AI</span>
+              <span className="text-[10px] text-purple-400">Financial Audit</span>
+            </button>
+          </div>
         </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2.5">
-          <button
-            onClick={() => onNavigate('pos')}
-            className="p-3 rounded-xl bg-slate-800 hover:bg-emerald-950/40 border border-slate-700 hover:border-emerald-500/40 transition flex flex-col items-center text-center group cursor-pointer"
-          >
-            <ShoppingCart className="w-5 h-5 text-emerald-400 mb-1.5 group-hover:scale-110 transition" />
-            <span className="text-xs font-bold text-slate-200">POS Sale</span>
-            <span className="text-[10px] text-slate-400">Issue Invoice</span>
-          </button>
-
-          <button
-            onClick={() => onNavigate('repairs')}
-            className="p-3 rounded-xl bg-slate-800 hover:bg-orange-950/40 border border-slate-700 hover:border-orange-500/40 transition flex flex-col items-center text-center group cursor-pointer"
-          >
-            <Wrench className="w-5 h-5 text-orange-400 mb-1.5 group-hover:scale-110 transition" />
-            <span className="text-xs font-bold text-slate-200">Job Card</span>
-            <span className="text-[10px] text-slate-400">Device Intake</span>
-          </button>
-
-          <button
-            onClick={() => onNavigate('utilityBills')}
-            className="p-3 rounded-xl bg-slate-800 hover:bg-yellow-950/40 border border-slate-700 hover:border-yellow-500/40 transition flex flex-col items-center text-center group cursor-pointer"
-          >
-            <Zap className="w-5 h-5 text-yellow-400 mb-1.5 group-hover:scale-110 transition" />
-            <span className="text-xs font-bold text-slate-200">Nama Bills</span>
-            <span className="text-[10px] text-slate-400">Power & Water</span>
-          </button>
-
-          <button
-            onClick={() => onNavigate('telecomBills')}
-            className="p-3 rounded-xl bg-slate-800 hover:bg-teal-950/40 border border-slate-700 hover:border-teal-500/40 transition flex flex-col items-center text-center group cursor-pointer"
-          >
-            <PhoneCall className="w-5 h-5 text-teal-400 mb-1.5 group-hover:scale-110 transition" />
-            <span className="text-xs font-bold text-slate-200">Telecom</span>
-            <span className="text-[10px] text-slate-400">Omantel / Ooredoo</span>
-          </button>
-
-          <button
-            onClick={() => onNavigate('expenses')}
-            className="p-3 rounded-xl bg-slate-800 hover:bg-rose-950/40 border border-slate-700 hover:border-rose-500/40 transition flex flex-col items-center text-center group cursor-pointer"
-          >
-            <Receipt className="w-5 h-5 text-rose-400 mb-1.5 group-hover:scale-110 transition" />
-            <span className="text-xs font-bold text-slate-200">Expense</span>
-            <span className="text-[10px] text-slate-400">Log Cash Out</span>
-          </button>
-
-          <button
-            onClick={() => onNavigate('cctvLive')}
-            className="p-3 rounded-xl bg-slate-800 hover:bg-cyan-950/40 border border-slate-700 hover:border-cyan-500/40 transition flex flex-col items-center text-center group cursor-pointer"
-          >
-            <Shield className="w-5 h-5 text-cyan-400 mb-1.5 group-hover:scale-110 transition" />
-            <span className="text-xs font-bold text-slate-200">Live CCTV</span>
-            <span className="text-[10px] text-slate-400">Door & Feeds</span>
-          </button>
-
-          <button
-            onClick={onOpenAIModal}
-            className="p-3 rounded-xl bg-gradient-to-b from-purple-900/40 to-indigo-900/40 hover:from-purple-900/60 hover:to-indigo-900/60 border border-purple-500/40 transition flex flex-col items-center text-center group cursor-pointer"
-          >
-            <Sparkles className="w-5 h-5 text-purple-400 mb-1.5 group-hover:scale-110 transition" />
-            <span className="text-xs font-bold text-purple-200">Gemini AI</span>
-            <span className="text-[10px] text-purple-400">Financial Audit</span>
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* Executive Performance Showcase: Total Daily Sales Volume & Recent High-Value Transactions */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
-        {/* Summary Card 1: Total Daily Sales Volume (xl:col-span-5) */}
-        <div className="xl:col-span-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800/90 border border-emerald-500/30 p-5 shadow-xl relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+      {(widgets.showDailySalesVolume || widgets.showHighValueTransactions) && (
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
+          {/* Summary Card 1: Total Daily Sales Volume */}
+          {widgets.showDailySalesVolume && (
+            <div className={`${widgets.showHighValueTransactions ? 'xl:col-span-5' : 'xl:col-span-12'} rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800/90 border border-emerald-500/30 p-5 shadow-xl relative overflow-hidden flex flex-col justify-between`}>
+              <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
           <div>
             {/* Header */}
@@ -586,9 +729,11 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
             </button>
           </div>
         </div>
+      )}
 
-        {/* Summary Card 2: Recent High-Value Transactions (xl:col-span-7) */}
-        <div className="xl:col-span-7 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800/90 border border-amber-500/30 p-5 shadow-xl relative overflow-hidden flex flex-col justify-between">
+      {/* Summary Card 2: Recent High-Value Transactions */}
+      {widgets.showHighValueTransactions && (
+        <div className={`${widgets.showDailySalesVolume ? 'xl:col-span-7' : 'xl:col-span-12'} rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800/90 border border-amber-500/30 p-5 shadow-xl relative overflow-hidden flex flex-col justify-between`}>
           <div className="absolute top-0 right-0 w-48 h-48 bg-amber-500/5 rounded-full blur-3xl pointer-events-none" />
 
           <div>
@@ -704,12 +849,16 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      )}
+    </div>
+  )}
 
-      {/* Main Content Split: Live Activity vs Revenue Visuals */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left 7 cols: Live Activity Stream */}
-        <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5">
+  {/* Main Content Split: Live Activity vs Revenue Visuals */}
+  {(widgets.showActivityFeed || widgets.showBankAccounts || widgets.showTopProducts) && (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Left 7 cols: Live Activity Stream */}
+      {widgets.showActivityFeed && (
+        <div className={`${(widgets.showBankAccounts || widgets.showTopProducts) ? 'lg:col-span-7' : 'lg:col-span-12'} bg-slate-900 border border-slate-800 rounded-2xl p-5`}>
           <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-amber-400" />
@@ -799,85 +948,93 @@ export const LiveDashboard: React.FC<LiveDashboardProps> = ({
             ))}
           </div>
         </div>
+      )}
 
-        {/* Right 5 cols: Multi-Bank Balances & Low Stock Radar */}
-        <div className="lg:col-span-5 space-y-5">
+      {/* Right 5 cols: Multi-Bank Balances & Low Stock Radar */}
+      {(widgets.showBankAccounts || widgets.showTopProducts) && (
+        <div className={`${widgets.showActivityFeed ? 'lg:col-span-5' : 'lg:col-span-12'} space-y-5`}>
           {/* Bank Accounts Breakdown */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-              <div className="flex items-center gap-2">
-                <Landmark className="w-4 h-4 text-blue-400" />
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                  Company Bank Ledgers
-                </h3>
-              </div>
-              <button
-                onClick={() => onNavigate('bankLedger')}
-                className="text-[11px] text-blue-400 hover:underline"
-              >
-                View Ledger
-              </button>
-            </div>
-
-            <div className="space-y-2.5">
-              {bankAccounts.map((b) => (
-                <div
-                  key={b.id}
-                  className="p-2.5 rounded-xl bg-slate-800/70 border border-slate-700/70 flex items-center justify-between text-xs"
-                >
-                  <div>
-                    <div className="font-semibold text-slate-200">{b.bankName}</div>
-                    <div className="text-[10px] text-slate-400 font-mono">Acc: {b.accountNumber}</div>
-                  </div>
-                  <div className="text-right font-mono font-bold text-blue-300">
-                    {formatMoney(b.currentBalance, activeCurrency)}
-                  </div>
+          {widgets.showBankAccounts && (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                <div className="flex items-center gap-2">
+                  <Landmark className="w-4 h-4 text-blue-400" />
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                    Company Bank Ledgers
+                  </h3>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Low Stock Alerts Box */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-rose-400" />
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-                  Urgent Stock Alerts ({lowStockProducts.length})
-                </h3>
-              </div>
-              <button
-                onClick={() => onNavigate('inventory')}
-                className="text-[11px] text-rose-400 hover:underline"
-              >
-                Manage Stock
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              {lowStockProducts.slice(0, 3).map((p) => (
-                <div
-                  key={p.id}
-                  className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-between text-xs"
+                <button
+                  onClick={() => onNavigate('bankLedger')}
+                  className="text-[11px] text-blue-400 hover:underline"
                 >
-                  <div className="truncate mr-2">
-                    <div className="font-semibold text-slate-200 truncate">{p.name}</div>
-                    <div className="text-[10px] text-rose-300/80 font-mono">
-                      Stock: {p.stock} units (Min limit: {p.minStockAlert})
+                  View Ledger
+                </button>
+              </div>
+
+              <div className="space-y-2.5">
+                {bankAccounts.map((b) => (
+                  <div
+                    key={b.id}
+                    className="p-2.5 rounded-xl bg-slate-800/70 border border-slate-700/70 flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-200">{b.bankName}</div>
+                      <div className="text-[10px] text-slate-400 font-mono">Acc: {b.accountNumber}</div>
+                    </div>
+                    <div className="text-right font-mono font-bold text-blue-300">
+                      {formatMoney(b.currentBalance, activeCurrency)}
                     </div>
                   </div>
-                  <button
-                    onClick={() => onNavigate('purchaseOrders')}
-                    className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] whitespace-nowrap transition"
-                  >
-                    Reorder PO
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Low Stock Alerts Box */}
+          {widgets.showTopProducts && (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-rose-400" />
+                  <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                    Urgent Stock Alerts ({lowStockProducts.length})
+                  </h3>
+                </div>
+                <button
+                  onClick={() => onNavigate('inventory')}
+                  className="text-[11px] text-rose-400 hover:underline"
+                >
+                  Manage Stock
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {lowStockProducts.slice(0, 3).map((p) => (
+                  <div
+                    key={p.id}
+                    className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-between text-xs"
+                  >
+                    <div className="truncate mr-2">
+                      <div className="font-semibold text-slate-200 truncate">{p.name}</div>
+                      <div className="text-[10px] text-rose-300/80 font-mono">
+                        Stock: {p.stock} units (Min limit: {p.minStockAlert})
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => onNavigate('purchaseOrders')}
+                      className="px-2 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-bold text-[10px] whitespace-nowrap transition"
+                    >
+                      Reorder PO
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
-  );
+  )}
+</div>
+);
 };

@@ -14,9 +14,20 @@ import {
   X,
   Store,
   Sparkles,
+  LayoutDashboard,
+  Volume2,
+  VolumeX,
+  Eye,
+  EyeOff,
+  Palette,
+  CheckCircle2,
+  Layers,
+  Radio,
+  Sliders,
 } from 'lucide-react';
-import { ProductCategory, StoreLocation, User, UserRolePermissions, UserRoleType } from '../types';
-import { CompanyConfig, BUSINESS_PRESETS } from '../utils/storage';
+import { ProductCategory, StoreLocation, User, UserRolePermissions, UserRoleType, DashboardWidgetConfig } from '../types';
+import { CompanyConfig, BUSINESS_PRESETS, DEFAULT_DASHBOARD_WIDGETS } from '../utils/storage';
+import { soundEffects } from '../utils/soundEffects';
 
 interface RabilOwnerPanelProps {
   branches: StoreLocation[];
@@ -49,11 +60,73 @@ export const RabilOwnerPanel: React.FC<RabilOwnerPanelProps> = ({
   onDeleteCategory,
   onUpdateCompanyConfig,
 }) => {
-  const [activeTab, setActiveTab] = useState<'users' | 'branches' | 'categories' | 'company'>('users');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'company' | 'users' | 'branches' | 'categories'>('dashboard');
 
-  // Company Config State
-  const [cfg, setCfg] = useState<CompanyConfig>(companyConfig);
+  // Company Config State with fallback widgets
+  const [cfg, setCfg] = useState<CompanyConfig>({
+    ...companyConfig,
+    dashboardWidgets: {
+      ...DEFAULT_DASHBOARD_WIDGETS,
+      ...(companyConfig.dashboardWidgets || {}),
+    },
+  });
   const [savedConfigToast, setSavedConfigToast] = useState(false);
+
+  const toggleWidget = (key: keyof DashboardWidgetConfig) => {
+    soundEffects.playClick();
+    const currentWidgets = cfg.dashboardWidgets || DEFAULT_DASHBOARD_WIDGETS;
+    const updated = {
+      ...currentWidgets,
+      [key]: !currentWidgets[key],
+    };
+    const newCfg = { ...cfg, dashboardWidgets: updated };
+    setCfg(newCfg);
+    onUpdateCompanyConfig(newCfg);
+  };
+
+  const applyWidgetPreset = (mode: 'all' | 'pos_minimal' | 'executive') => {
+    soundEffects.playExpand();
+    let newWidgets: DashboardWidgetConfig;
+    if (mode === 'all') {
+      newWidgets = { ...DEFAULT_DASHBOARD_WIDGETS };
+    } else if (mode === 'pos_minimal') {
+      newWidgets = {
+        showDailySalesVolume: true,
+        showHighValueTransactions: false,
+        showCashDrawer: true,
+        showBankAccounts: false,
+        showCCTVFeeds: false,
+        showSmartDoor: true,
+        showRepairsBottlenecks: false,
+        showQuickLaunchpad: true,
+        showActivityFeed: true,
+        showTopProducts: true,
+        showCategoryBreakdown: false,
+        showLiveOperators: true,
+        showAlertBadges: true,
+      };
+    } else {
+      // Executive
+      newWidgets = {
+        showDailySalesVolume: true,
+        showHighValueTransactions: true,
+        showCashDrawer: true,
+        showBankAccounts: true,
+        showCCTVFeeds: true,
+        showSmartDoor: true,
+        showRepairsBottlenecks: true,
+        showQuickLaunchpad: true,
+        showActivityFeed: true,
+        showTopProducts: true,
+        showCategoryBreakdown: true,
+        showLiveOperators: true,
+        showAlertBadges: true,
+      };
+    }
+    const updated = { ...cfg, dashboardWidgets: newWidgets };
+    setCfg(updated);
+    onUpdateCompanyConfig(updated);
+  };
 
   // New Category State
   const [newCatName, setNewCatName] = useState('');
@@ -169,10 +242,27 @@ export const RabilOwnerPanel: React.FC<RabilOwnerPanelProps> = ({
         </div>
 
         {/* Tab switcher */}
-        <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs self-start md:self-auto">
+        <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs self-start md:self-auto overflow-x-auto max-w-full">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-3 py-1.5 rounded-lg font-semibold transition flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'dashboard' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5" />
+            <span>Dashboard & Auto-Fit</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('company')}
+            className={`px-3 py-1.5 rounded-lg font-semibold transition whitespace-nowrap ${
+              activeTab === 'company' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            Company & Presets
+          </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition ${
+            className={`px-3 py-1.5 rounded-lg font-semibold transition whitespace-nowrap ${
               activeTab === 'users' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -180,7 +270,7 @@ export const RabilOwnerPanel: React.FC<RabilOwnerPanelProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('branches')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition ${
+            className={`px-3 py-1.5 rounded-lg font-semibold transition whitespace-nowrap ${
               activeTab === 'branches' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
             }`}
           >
@@ -188,22 +278,253 @@ export const RabilOwnerPanel: React.FC<RabilOwnerPanelProps> = ({
           </button>
           <button
             onClick={() => setActiveTab('categories')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition ${
+            className={`px-3 py-1.5 rounded-lg font-semibold transition whitespace-nowrap ${
               activeTab === 'categories' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
             }`}
           >
             Categories ({categories.length})
           </button>
-          <button
-            onClick={() => setActiveTab('company')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition ${
-              activeTab === 'company' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 hover:text-white'
-            }`}
-          >
-            Company Profile & CR/VAT
-          </button>
         </div>
       </div>
+
+      {/* Tab 0: Dashboard Display & Auto-Fit Controller */}
+      {activeTab === 'dashboard' && (
+        <div className="space-y-6 animate-in fade-in duration-150">
+          {/* Header Banner */}
+          <div className="p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-slate-700 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <LayoutDashboard className="w-5 h-5 text-amber-400" />
+                <h2 className="text-sm font-bold text-white tracking-wide">
+                  Dashboard Widget Visibility & Automatic Layout Reflow Engine
+                </h2>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Decide which cards, metrics, and technical modules appear on the live dashboard. When any widget is removed, the responsive grid automatically auto-fits and expands remaining items without empty slots.
+              </p>
+            </div>
+
+            {/* Auto-Fit Quick Presets */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => applyWidgetPreset('all')}
+                className="px-3 py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition cursor-pointer"
+              >
+                All On (Full Suite)
+              </button>
+              <button
+                type="button"
+                onClick={() => applyWidgetPreset('pos_minimal')}
+                className="px-3 py-1.5 rounded-lg bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/40 text-xs font-bold transition cursor-pointer"
+              >
+                POS Minimal
+              </button>
+              <button
+                type="button"
+                onClick={() => applyWidgetPreset('executive')}
+                className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition cursor-pointer"
+              >
+                Executive Finance
+              </button>
+            </div>
+          </div>
+
+          {/* Interactive Widget Toggles Grid */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center justify-between">
+              <span>Card-by-Card Visibility Toggles</span>
+              <span className="text-[11px] text-emerald-400 font-mono">
+                {Object.values(cfg.dashboardWidgets || DEFAULT_DASHBOARD_WIDGETS).filter(Boolean).length} / 12 Active
+              </span>
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
+              {[
+                {
+                  key: 'showDailySalesVolume',
+                  label: 'Total Daily Sales Volume Card',
+                  desc: 'Gross revenue, orders count, total units sold & payment distribution',
+                },
+                {
+                  key: 'showHighValueTransactions',
+                  label: 'Recent High-Value Transactions',
+                  desc: 'Top customer sales invoices with 1-click tax invoice printing',
+                },
+                {
+                  key: 'showCashDrawer',
+                  label: 'Drawer Cash in Hand (Live Float)',
+                  desc: 'Physical drawer cash status & instant deposit to bank trigger',
+                },
+                {
+                  key: 'showBankAccounts',
+                  label: 'Company Bank Accounts Ledger',
+                  desc: 'Real-time balances across Bank Muscat, Dhofar & NBO accounts',
+                },
+                {
+                  key: 'showCCTVFeeds',
+                  label: 'CCTV Feeds & Surveillance Status',
+                  desc: 'Store cameras streaming status & remote smart door lock control',
+                },
+                {
+                  key: 'showSmartDoor',
+                  label: 'Smart Security Door Lock Status',
+                  desc: 'Remote lock/unlock switch and battery health meter',
+                },
+                {
+                  key: 'showRepairsBottlenecks',
+                  label: 'Pending Technician Bottlenecks',
+                  desc: 'Micro-soldering, Dubai parts delay & waiting approval job cards',
+                },
+                {
+                  key: 'showQuickLaunchpad',
+                  label: 'Quick Operations Launchpad',
+                  desc: '1-click launcher for POS, Cam Scan, Nama Bills & Omantel recharges',
+                },
+                {
+                  key: 'showActivityFeed',
+                  label: 'Live Store Activity Feed',
+                  desc: 'Real-time ledger events: sales, utility bills, repairs, transfers',
+                },
+                {
+                  key: 'showTopProducts',
+                  label: 'Urgent Low Stock Warnings',
+                  desc: 'Catalog items below minimum safety threshold needing purchase orders',
+                },
+                {
+                  key: 'showLiveOperators',
+                  label: 'Active Operators & Cashiers Banner',
+                  desc: 'Real-time terminal status for Cashiers, Technicians & Owners',
+                },
+                {
+                  key: 'showAlertBadges',
+                  label: 'Store Alert Badges Bar',
+                  desc: 'Emergency notifications for low stock, door alarms & service bottlenecks',
+                },
+              ].map((item) => {
+                const isEnabled = !!(cfg.dashboardWidgets && (cfg.dashboardWidgets as any)[item.key]);
+                return (
+                  <div
+                    key={item.key}
+                    onClick={() => toggleWidget(item.key as keyof DashboardWidgetConfig)}
+                    className={`p-3.5 rounded-xl border transition cursor-pointer flex items-start justify-between gap-3 ${
+                      isEnabled
+                        ? 'bg-slate-800/90 border-emerald-500/50 shadow-md shadow-emerald-500/5'
+                        : 'bg-slate-900/60 border-slate-800 opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            isEnabled ? 'bg-emerald-400' : 'bg-slate-600'
+                          }`}
+                        />
+                        <span className="font-bold text-white">{item.label}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                        {item.desc}
+                      </p>
+                    </div>
+
+                    <div
+                      className={`px-2 py-1 rounded text-[10px] font-bold font-mono shrink-0 transition ${
+                        isEnabled
+                          ? 'bg-emerald-500 text-slate-950'
+                          : 'bg-slate-800 text-slate-400 border border-slate-700'
+                      }`}
+                    >
+                      {isEnabled ? 'VISIBLE' : 'HIDDEN'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sound Synthesizer & Acoustic Effects Controls */}
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <Volume2 className="w-4 h-4 text-amber-400" />
+                  <span>Acoustic Sound Synthesizer (Web Audio API)</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Real-time synthesized audio feedback for barcode scanning, POS payment chimes, and system alert warnings.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !(cfg.soundEnabled ?? true);
+                  soundEffects.setMuted(!next);
+                  setCfg({ ...cfg, soundEnabled: next });
+                  onUpdateCompanyConfig({ ...cfg, soundEnabled: next });
+                  if (next) soundEffects.playClick();
+                }}
+                className={`px-3 py-1.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition cursor-pointer border ${
+                  cfg.soundEnabled ?? true
+                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    : 'bg-slate-800 text-slate-400 border-slate-700'
+                }`}
+              >
+                {cfg.soundEnabled ?? true ? (
+                  <>
+                    <Volume2 className="w-4 h-4 text-emerald-400" />
+                    <span>Sound Active</span>
+                  </>
+                ) : (
+                  <>
+                    <VolumeX className="w-4 h-4 text-rose-400" />
+                    <span>Sound Muted</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Audio Test Triggers */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => soundEffects.playBarcodeBeep()}
+                className="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-center transition cursor-pointer"
+              >
+                <div className="text-xs font-bold text-amber-300">Scanner Beep</div>
+                <div className="text-[10px] text-slate-400 mt-0.5 font-mono">2150Hz Laser Pulse</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => soundEffects.playCashChime()}
+                className="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-center transition cursor-pointer"
+              >
+                <div className="text-xs font-bold text-emerald-300">Payment Chime</div>
+                <div className="text-[10px] text-slate-400 mt-0.5 font-mono">4-Note Harmonic Chord</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => soundEffects.playAlertBuzzer()}
+                className="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-center transition cursor-pointer"
+              >
+                <div className="text-xs font-bold text-rose-300">Alert Buzzer</div>
+                <div className="text-[10px] text-slate-400 mt-0.5 font-mono">Dual-Tone Warning</div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => soundEffects.playExpand()}
+                className="p-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-center transition cursor-pointer"
+              >
+                <div className="text-xs font-bold text-cyan-300">Expand Whoosh</div>
+                <div className="text-[10px] text-slate-400 mt-0.5 font-mono">Tactile Sweep</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Tab 1: Staff Roles & Granular Permissions Matrix */}
       {activeTab === 'users' && (
@@ -467,12 +788,23 @@ export const RabilOwnerPanel: React.FC<RabilOwnerPanelProps> = ({
                   dir="rtl"
                   value={cfg.companyNameAr}
                   onChange={(e) => setCfg({ ...cfg, companyNameAr: e.target.value })}
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-100"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-100 font-arabic"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Brand Badge Initials (e.g. RB, RST)</label>
+                <label className="block text-slate-300 font-semibold mb-1">Company Legal Name (Bangla - বাংলা)</label>
+                <input
+                  type="text"
+                  placeholder="ফাকার আল আইয়াম প্রজেক্টস এলএলসি"
+                  value={cfg.companyNameBn || ''}
+                  onChange={(e) => setCfg({ ...cfg, companyNameBn: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-100 font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Brand Badge Initials (e.g. FAP, MEP, RB)</label>
                 <input
                   type="text"
                   maxLength={10}
@@ -483,13 +815,49 @@ export const RabilOwnerPanel: React.FC<RabilOwnerPanelProps> = ({
               </div>
 
               <div>
-                <label className="block text-slate-300 font-semibold mb-1">Business Tagline</label>
+                <label className="block text-slate-300 font-semibold mb-1">Business Tagline (English)</label>
                 <input
                   type="text"
                   value={cfg.tagline || ''}
                   onChange={(e) => setCfg({ ...cfg, tagline: e.target.value })}
                   className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-100"
                 />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Business Tagline (Arabic)</label>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={cfg.taglineAr || ''}
+                  onChange={(e) => setCfg({ ...cfg, taglineAr: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-100 font-arabic"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Business Tagline (Bangla - বাংলা)</label>
+                <input
+                  type="text"
+                  placeholder="বাণিজ্যিক প্রকল্প, ইলেকট্রনিক্স ও স্মার্ট সিকিউরিটি সিস্টেম"
+                  value={cfg.taglineBn || ''}
+                  onChange={(e) => setCfg({ ...cfg, taglineBn: e.target.value })}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-100 font-sans"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-300 font-semibold mb-1">Active Color Accent Theme</label>
+                <select
+                  value={cfg.colorTheme || 'emerald_gold'}
+                  onChange={(e) => setCfg({ ...cfg, colorTheme: e.target.value as any })}
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-100 font-bold"
+                >
+                  <option value="emerald_gold">Emerald Gold (Flagship Luxury Tech)</option>
+                  <option value="neon_cyan">Cyber Neon Cyan (Futuristic)</option>
+                  <option value="sapphire_tech">Sapphire Tech (Enterprise Blue)</option>
+                  <option value="cyber_amber">Obsidian Amber (Night Vision)</option>
+                </select>
               </div>
 
               <div>

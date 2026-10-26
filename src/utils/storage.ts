@@ -24,6 +24,7 @@ import {
   CompanyConfig,
   BusinessPreset,
   BusinessIndustry,
+  DashboardWidgetConfig,
 } from '../types';
 import {
   INITIAL_BANK_ACCOUNTS,
@@ -44,22 +45,72 @@ import {
   INITIAL_UTILITY_BILLS,
 } from '../data/initialData';
 
-export type { CompanyConfig } from '../types';
+export type { CompanyConfig, DashboardWidgetConfig } from '../types';
+
+export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidgetConfig = {
+  showDailySalesVolume: true,
+  showHighValueTransactions: true,
+  showCashDrawer: true,
+  showBankAccounts: true,
+  showCCTVFeeds: true,
+  showSmartDoor: true,
+  showRepairsBottlenecks: true,
+  showQuickLaunchpad: true,
+  showActivityFeed: true,
+  showTopProducts: true,
+  showCategoryBreakdown: true,
+  showLiveOperators: true,
+  showAlertBadges: true,
+};
 
 export const BUSINESS_PRESETS: BusinessPreset[] = [
+  {
+    id: 'preset-fakar-alayam',
+    name: 'شركة فكار الأيام للمشاريع ذ.م.م - FAKAR AL AYAM PROJECTS LLC',
+    industry: 'electronics_cctv',
+    iconName: 'Building2',
+    description: 'Flagship commercial projects & smart solutions: High-speed POS, IMEI serial scanning, CCTV surveillance, multi-bank treasury & Oman VAT 5% computerized tax invoices.',
+    config: {
+      companyName: 'FAKAR AL AYAM PROJECTS LLC',
+      companyNameAr: 'شركة فكار الأيام للمشاريع ذ.م.م',
+      companyNameBn: 'ফাকার আল আইয়াম প্রজেক্টস এলএলসি',
+      shortName: 'FAKAR AL AYAM',
+      industryType: 'electronics_cctv',
+      tagline: 'Commercial Projects, Electronics & Smart Systems Solutions',
+      taglineAr: 'حلول المشاريع التجارية والإلكترونيات والأنظمة الذكية المتكاملة',
+      taglineBn: 'বাণিজ্যিক প্রকল্প, ইলেকট্রনিক্স ও স্মার্ট সিকিউরিটি সিস্টেম সলিউশন',
+      crNumber: 'CR 1492083/2026',
+      vatNumber: 'OM1100984512',
+      taxRatePercent: 5.0,
+      taxLabel: 'Oman VAT (5%)',
+      phone: '+968 2478 9120 / +968 9123 4567',
+      email: 'info@fakar-alayam.com',
+      address: 'Commercial Projects Complex, Ruwi High Street, Muscat, Sultanate of Oman',
+      addressAr: 'مجمع المشاريع التجارية، شارع روي التجاري، مسقط، سلطنة عُمان',
+      addressBn: 'রুই বাণিজ্যিক কেন্দ্র, মাস্কাট, ওমান',
+      invoiceFooterNote: 'FAKAR AL AYAM PROJECTS LLC - Official computerized tax invoice. Goods eligible for exchange within 7 days with original invoice.',
+      invoiceFooterNoteAr: 'شركة فكار الأيام للمشاريع ذ.م.م - فاتورة ضريبية رسمية معتمدة. تقبل البضاعة للاستبدال خلال 7 أيام بالفاتورة الأصلية.',
+      currency: 'OMR',
+      soundEnabled: true,
+      colorTheme: 'emerald_gold',
+      dashboardWidgets: DEFAULT_DASHBOARD_WIDGETS,
+    },
+  },
   {
     id: 'preset-marufedge-promedia',
     name: 'MarufEdge ProMedia Business Solutions ERP online v.5',
     industry: 'electronics_cctv',
     iconName: 'Server',
-    description: 'Flagship enterprise ERP suite: High-speed POS, CCTV security surveillance, IMEI serial tracking, multi-bank treasury, and automated Oman VAT invoices.',
+    description: 'Enterprise ERP suite: High-speed POS, CCTV security surveillance, IMEI serial tracking, multi-bank treasury, and automated Oman VAT invoices.',
     config: {
       companyName: 'MarufEdge ProMedia Business Solutions ERP online v.5',
       companyNameAr: 'ماروف إيدج برو ميديا لحلول الأعمال والأنظمة الذكية v.5',
+      companyNameBn: 'মারুফএজ প্রোমিডিয়া বিজনেস সলিউশনস ইআরপি',
       shortName: 'MEP',
       industryType: 'electronics_cctv',
       tagline: 'Business Solutions ERP Online v.5 • Multi-Branch & Real-time Cloud',
       taglineAr: 'حلول الأعمال السحابية الذكية v.5 • إدارة الفروع والأنظمة',
+      taglineBn: 'বিজনেস সলিউশনস ইআরপি অনলাইন ভার্সন ৫',
       crNumber: 'CR 1394821/2026',
       vatNumber: 'OM1100239102',
       taxRatePercent: 5.0,
@@ -70,6 +121,9 @@ export const BUSINESS_PRESETS: BusinessPreset[] = [
       invoiceFooterNote: 'MarufEdge ProMedia Business Solutions ERP online v.5 - Official computerized sales receipt. Goods eligible for exchange within 7 days with original invoice.',
       invoiceFooterNoteAr: 'ماروف إيدج برو ميديا لحلول الأعمال والأنظمة الذكية v.5 - فاتورة إلكترونية معتمدة.',
       currency: 'OMR',
+      soundEnabled: true,
+      colorTheme: 'emerald_gold',
+      dashboardWidgets: DEFAULT_DASHBOARD_WIDGETS,
     },
   },
   {
@@ -340,23 +394,30 @@ export interface AppState {
 
 const STORAGE_KEY = 'al_rabil_erp_v2_data';
 
-const DEFAULT_COMPANY_CONFIG: CompanyConfig = {
-  companyName: 'MarufEdge ProMedia Business Solutions ERP online v.5',
-  companyNameAr: 'ماروف إيدج برو ميديا لحلول الأعمال والأنظمة الذكية v.5',
-  shortName: 'MEP',
+export const DEFAULT_COMPANY_CONFIG: CompanyConfig = {
+  companyName: 'FAKAR AL AYAM PROJECTS LLC',
+  companyNameAr: 'شركة فكار الأيام للمشاريع ذ.م.م',
+  companyNameBn: 'ফাকার আল আইয়াম প্রজেক্টস এলএলসি',
+  shortName: 'FAKAR AL AYAM',
   industryType: 'electronics_cctv',
-  tagline: 'Business Solutions ERP Online v.5 • Multi-Branch & Real-time Cloud',
-  taglineAr: 'حلول الأعمال السحابية الذكية v.5 • إدارة الفروع والأنظمة',
-  crNumber: 'CR 1394821/2026',
-  vatNumber: 'OM1100239102',
+  tagline: 'Commercial Projects, Electronics & Smart Systems Solutions',
+  taglineAr: 'حلول المشاريع التجارية والإلكترونيات والأنظمة الذكية المتكاملة',
+  taglineBn: 'বাণিজ্যিক প্রকল্প, ইলেকট্রনিক্স ও স্মার্ট সিকিউরিটি সিস্টেম সলিউশন',
+  crNumber: 'CR 1492083/2026',
+  vatNumber: 'OM1100984512',
   taxRatePercent: 5.0,
   taxLabel: 'Oman VAT (5%)',
-  phone: '+968 2478 9120',
-  email: 'info@marufedge-promedia.com',
-  address: 'Business Solutions Hub, Ruwi Commercial Center, Muscat, Sultanate of Oman',
-  invoiceFooterNote: 'MarufEdge ProMedia Business Solutions ERP online v.5 - Official computerized sales receipt. Goods eligible for exchange within 7 days with original invoice.',
-  invoiceFooterNoteAr: 'ماروف إيدج برو ميديا لحلول الأعمال والأنظمة الذكية v.5 - فاتورة إلكترونية معتمدة.',
+  phone: '+968 2478 9120 / +968 9123 4567',
+  email: 'info@fakar-alayam.com',
+  address: 'Commercial Projects Complex, Ruwi High Street, Muscat, Sultanate of Oman',
+  addressAr: 'مجمع المشاريع التجارية، شارع روي التجاري، مسقط، سلطنة عُمان',
+  addressBn: 'রুই বাণিজ্যিক কেন্দ্র, মাস্কাট, ওমান',
+  invoiceFooterNote: 'FAKAR AL AYAM PROJECTS LLC - Official computerized tax invoice. Goods eligible for exchange within 7 days with original invoice.',
+  invoiceFooterNoteAr: 'شركة فكار الأيام للمشاريع ذ.م.م - فاتورة ضريبية رسمية معتمدة. تقبل البضاعة للاستبدال خلال 7 أيام بالفاتورة الأصلية.',
   currency: 'OMR',
+  soundEnabled: true,
+  colorTheme: 'emerald_gold',
+  dashboardWidgets: DEFAULT_DASHBOARD_WIDGETS,
 };
 
 export function getInitialState(): AppState {
@@ -410,31 +471,41 @@ export function loadAppState(): AppState {
 
     let updatedUsers = existingUsers;
     if (!hasRabiul || !hasBigBrother) {
-      // Replace old placeholder or insert Rabiul and Big Brother
       const nonOwners = existingUsers.filter((u: User) => u.role !== 'owner');
       updatedUsers = [INITIAL_USERS[0], INITIAL_USERS[1], ...nonOwners];
     }
 
-    // Auto-migrate old default name to MarufEdge ProMedia Business Solutions ERP online v.5
+    // Auto-migrate company profile to FAKAR AL AYAM PROJECTS LLC
     let currentConfig = parsed.companyConfig || {};
     if (
       !currentConfig.companyName ||
       currentConfig.companyName === 'Al-Rabiul & Big Brother Mobiles & Smart Security LLC' ||
-      currentConfig.companyName.toLowerCase().includes('al-rabiul & big brother')
+      currentConfig.companyName.toLowerCase().includes('al-rabiul') ||
+      currentConfig.companyName.toLowerCase().includes('marufedge')
     ) {
       currentConfig = {
         ...DEFAULT_COMPANY_CONFIG,
         ...currentConfig,
         companyName: DEFAULT_COMPANY_CONFIG.companyName,
         companyNameAr: DEFAULT_COMPANY_CONFIG.companyNameAr,
+        companyNameBn: DEFAULT_COMPANY_CONFIG.companyNameBn,
         shortName: DEFAULT_COMPANY_CONFIG.shortName,
         tagline: DEFAULT_COMPANY_CONFIG.tagline,
         taglineAr: DEFAULT_COMPANY_CONFIG.taglineAr,
+        taglineBn: DEFAULT_COMPANY_CONFIG.taglineBn,
+        dashboardWidgets: {
+          ...DEFAULT_DASHBOARD_WIDGETS,
+          ...(currentConfig.dashboardWidgets || {}),
+        },
       };
     } else {
       currentConfig = {
         ...DEFAULT_COMPANY_CONFIG,
         ...currentConfig,
+        dashboardWidgets: {
+          ...DEFAULT_DASHBOARD_WIDGETS,
+          ...(currentConfig.dashboardWidgets || {}),
+        },
       };
     }
 
